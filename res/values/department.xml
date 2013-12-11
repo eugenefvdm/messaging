@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="priorities">
+        <item>Callout</item>
+        <item>Client Maintenance</item>
+        <item>Inhouse Maintenance</item>
+        <item>Installation</item>
+        <item>Installation Move</item>
+        <item>Site Survey</item>
+        <item>SLA</item>
+    </string-array>
+
+</resources> 
