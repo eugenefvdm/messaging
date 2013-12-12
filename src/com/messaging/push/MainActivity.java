@@ -4,13 +4,9 @@ import static com.messaging.push.CommonUtilities.DISPLAY_MESSAGE_ACTION;
 import static com.messaging.push.CommonUtilities.EXTRA_MESSAGE;
 import static com.messaging.push.CommonUtilities.SENDER_ID;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.app.ListActivity;
 import android.app.LoaderManager;
 import android.content.BroadcastReceiver;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Intent;
@@ -38,7 +34,7 @@ import com.messaging.push.db.TaskTable;
 public class MainActivity extends ListActivity implements
 		LoaderManager.LoaderCallbacks<Cursor> {
 	// label to display GCM messages
-	//TextView lblMessage;
+	// TextView lblMessage;
 
 	AsyncTask<Void, Void, Void> mRegisterTask;
 
@@ -48,8 +44,6 @@ public class MainActivity extends ListActivity implements
 
 	public static String name;
 	public static String email;
-	
-	private Uri todoUri;
 
 	private static final int DELETE_ID = Menu.FIRST + 1;
 	// private Cursor cursor;
@@ -69,9 +63,7 @@ public class MainActivity extends ListActivity implements
 		// Check if Internet present
 		if (!cd.isConnectingToInternet()) {
 			// Internet Connection is not present
-			alert.showAlertDialog(MainActivity.this,
-					"Internet Connection Error",
-					"Please connect to working Internet connection", false);
+			alert.showAlertDialog(MainActivity.this, "Internet Connection Error", "Please connect to working Internet connection", false);
 			// stop executing code by return
 			return;
 		}
@@ -87,12 +79,12 @@ public class MainActivity extends ListActivity implements
 
 		// Make sure the manifest was properly set - comment out this line
 		// while developing the app, then uncomment it when it's ready.
-		GCMRegistrar.checkManifest(this);
+		// http://developer.android.com/reference/com/google/android/gcm/GCMRegistrar.html#checkManifest(android.content.Context)
+		//GCMRegistrar.checkManifest(this);
 
-		//lblMessage = (TextView) findViewById(R.id.lblMessage);
+		// lblMessage = (TextView) findViewById(R.id.lblMessage);
 
-		registerReceiver(mHandleMessageReceiver, new IntentFilter(
-				DISPLAY_MESSAGE_ACTION));
+		registerReceiver(mHandleMessageReceiver, new IntentFilter(DISPLAY_MESSAGE_ACTION));
 
 		// Get GCM registration id
 		final String regId = GCMRegistrar.getRegistrationId(this);
@@ -105,9 +97,8 @@ public class MainActivity extends ListActivity implements
 			// Device is already registered on GCM
 			if (GCMRegistrar.isRegisteredOnServer(this)) {
 				// Skips registration.
-				Toast.makeText(getApplicationContext(),
-						"Registered with Cloud Messaging", Toast.LENGTH_LONG)
-						.show();
+				// For debugging we used to notify the user that the device is already registered...
+				Toast.makeText(getApplicationContext(), "Ready to receive cloud messages :-)", Toast.LENGTH_LONG).show();
 			} else {
 				// Try to register again, but not in the UI thread.
 				// It's also necessary to cancel the thread onDestroy(),
@@ -133,96 +124,50 @@ public class MainActivity extends ListActivity implements
 			}
 		}
 	}
-	
+
 	// Opens the second activity if an entry is clicked
-		@Override
-		protected void onListItemClick(ListView l, View v, int position, long id) {
-			super.onListItemClick(l, v, position, id);
-			Intent i = new Intent(this, TaskDetailActivity.class);
-			Uri taskUri = Uri.parse(MyTaskContentProvider.CONTENT_URI + "/" + id);
-			i.putExtra(MyTaskContentProvider.CONTENT_ITEM_TYPE, taskUri);
-			startActivity(i);
-		}
+	@Override
+	protected void onListItemClick(ListView l, View v, int position, long id) {
+		super.onListItemClick(l, v, position, id);
+		Intent i = new Intent(this, TaskDetailActivity.class);
+		Uri taskUri = Uri.parse(MyTaskContentProvider.CONTENT_URI + "/" + id);
+		i.putExtra(MyTaskContentProvider.CONTENT_ITEM_TYPE, taskUri);
+		startActivity(i);
+	}
 
 	private void fillData() {
 
 		// Fields from the database (projection)
 		// Must include the _id column for the adapter to work
-		String[] from = new String[] { TaskTable.COLUMN_CLIENT,
-				TaskTable.COLUMN_DEPARTMENT };
+		String[] from = new String[] {
+				TaskTable.COLUMN_CLIENT, TaskTable.COLUMN_DEPARTMENT };
 		// Fields on the UI to which we map
-		int[] to = new int[] { R.id.client, R.id.category };
+		int[] to = new int[] {
+				R.id.client, R.id.category };
 
 		getLoaderManager().initLoader(0, null, this);
-		adapter = new SimpleCursorAdapter(this, R.layout.task_row, null, from,
-				to, 0);
+		adapter = new SimpleCursorAdapter(this, R.layout.task_row, null, from, to, 0);
 
 		setListAdapter(adapter);
 	}
 
 	/**
-	 * Receiving push messages
+	 * Receive push message
 	 * */
 	private final BroadcastReceiver mHandleMessageReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			String newMessage = intent.getExtras().getString(EXTRA_MESSAGE);
-			// Waking up mobile if it is sleeping
+			// Waking up device if it is sleeping
 			WakeLocker.acquire(getApplicationContext());
 
-			/**
-			 * Take appropriate action on this message depending upon your app
-			 * requirement For now i am just displaying it on the screen
-			 * */
+			// Show received message
+			Toast.makeText(getApplicationContext(), newMessage, Toast.LENGTH_LONG).show();
 
-			// Showing received message
-			//lblMessage.append(newMessage + "\n");
-			Toast.makeText(getApplicationContext(), "Snowball Message: " + newMessage, Toast.LENGTH_LONG).show();
-			//saveState(newMessage);
-
-			// Releasing wake lock
+			// Release wake lock
 			WakeLocker.release();
 		}
 	};
-
-	private void saveState(String str) {
-
-		int ticket_id = 0;
-		String department = null;
-		String client = null;
-		String address = null;
-
-		JSONObject jObject;
-		try {
-			jObject = new JSONObject(str);
-			ticket_id = jObject.getInt("ticket_id");
-			department = jObject.getString("department");
-			client = jObject.getString("client");
-			address = jObject.getString("address");
-		} catch (JSONException e) {
-			Log.v("JSON", "Error parsing JSON in MainActivity");
-			e.printStackTrace();
-		}
-		Toast.makeText(getApplicationContext(), "Department: " + department,
-				Toast.LENGTH_LONG).show();
-
-		ContentValues values = new ContentValues();
-		values.put(TaskTable.COLUMN_TICKET_ID, ticket_id);
-		values.put(TaskTable.COLUMN_DEPARTMENT, department);
-		values.put(TaskTable.COLUMN_CLIENT, client);
-		values.put(TaskTable.COLUMN_ADDRESS, address);
-
-		if (todoUri == null) {
-			// New task
-			todoUri = getContentResolver().insert(
-					MyTaskContentProvider.CONTENT_URI, values);
-		} else {
-			// Update task
-			todoUri = getContentResolver().insert(
-					MyTaskContentProvider.CONTENT_URI, values);
-			// getContentResolver().update(todoUri, values, null, null);
-		}
-	}
 
 	@Override
 	protected void onDestroy() {
@@ -233,7 +178,7 @@ public class MainActivity extends ListActivity implements
 			unregisterReceiver(mHandleMessageReceiver);
 			GCMRegistrar.onDestroy(this);
 		} catch (Exception e) {
-			Log.e("UnRegister Receiver Error", "> " + e.getMessage());
+			Log.e("unregisterReceiver error", "> " + e.getMessage());
 		}
 		super.onDestroy();
 	}
@@ -250,11 +195,14 @@ public class MainActivity extends ListActivity implements
 		switch (item.getItemId()) {
 		case R.id.delete_all:
 			deleteAll();
-			return true;		
+			return true;
+		case R.id.unregister:
+			GCMRegistrar.unregister(this);
+			return true;
 		}
 		return false;
 	}
-	
+
 	private void deleteAll() {
 		Uri uri = Uri.parse(MyTaskContentProvider.CONTENT_URI + "/");
 		getContentResolver().delete(uri, null, null);
@@ -271,10 +219,10 @@ public class MainActivity extends ListActivity implements
 	// creates a new loader after the initLoader () call
 	@Override
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-		String[] projection = { TaskTable.COLUMN_ID, TaskTable.COLUMN_CLIENT,
+		String[] projection = {
+				TaskTable.COLUMN_ID, TaskTable.COLUMN_CLIENT,
 				TaskTable.COLUMN_DEPARTMENT };
-		CursorLoader cursorLoader = new CursorLoader(this,
-				MyTaskContentProvider.CONTENT_URI, projection, null, null, null);
+		CursorLoader cursorLoader = new CursorLoader(this, MyTaskContentProvider.CONTENT_URI, projection, null, null, null);
 		return cursorLoader;
 	}
 

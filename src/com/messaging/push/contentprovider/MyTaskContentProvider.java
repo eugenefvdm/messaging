@@ -207,7 +207,8 @@ public class MyTaskContentProvider extends ContentProvider {
 			client = jObject.getString("client");
 			address = jObject.getString("address");
 		} catch (JSONException e) {
-			Log.e("JSON", "Error parsing JSON in MainActivity");
+			Log.e("Check JSON", "This was not a JSONObject or an error occured so dumping StackTrace");
+			//Log.e("JSON", "Error parsing JSON in MainActivity");
 			e.printStackTrace();
 			return null;
 		}

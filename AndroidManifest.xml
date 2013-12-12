@@ -33,6 +33,9 @@
 
     <!-- Permission to vibrate -->
     <uses-permission android:name="android.permission.VIBRATE" />
+    
+     <!-- Permission to read phone state used for obtaining device ID IMEI or MEID -->
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <!-- Main activity. -->
     <application

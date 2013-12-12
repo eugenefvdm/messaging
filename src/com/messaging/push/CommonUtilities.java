@@ -7,6 +7,7 @@ public final class CommonUtilities {
 	
 	// give your server registration url here
     static final String SERVER_URL = "http://196.201.6.235/whmcs/modules/addons/messaging/register.php"; 
+    static final String SERVER_UNREGISTER_URL = "http://196.201.6.235/whmcs/modules/addons/messaging/action.php";
 
     // Google project id
     static final String SENDER_ID = "818143334463"; 

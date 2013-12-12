@@ -4,5 +4,9 @@
         android:id="@+id/delete_all"        
         android:title="Delete All">
     </item>
+    <item
+        android:id="@+id/unregister"        
+        android:title="Unregister">
+    </item>
 
 </menu> 

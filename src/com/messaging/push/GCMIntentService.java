@@ -52,20 +52,34 @@ public class GCMIntentService extends GCMBaseIntentService {
      * */
     @Override
     protected void onMessage(Context context, Intent intent) {
-        Log.i(TAG, "Received message");
+    	ContentValues values;
+    	
         String message = intent.getExtras().getString("price");
-        
- 		ContentValues values = MyTaskContentProvider.convertMessageToContentValues(message);
+        Log.i(TAG, "Received message '" + message + "' and now examining content...");
+        // TODO The AndroidHive demo return NULL first time you register, this has to be researched
+        if (message == null) {
+        	Log.e(TAG, "Message is NULL!");
+        }
+                
+        try {
+        	values = MyTaskContentProvider.convertMessageToContentValues(message);	
+        } catch (Exception e) {
+        	Log.e(TAG, "Error occured examining content for this message '" + message + "'");
+        	values = null;
+        } 		
  		
  		if (values != null) {
+ 			Log.v(TAG, "Values were not null assuming from Messaging Server");
  			String department = values.getAsString("department");
  			getContentResolver().insert(MyTaskContentProvider.CONTENT_URI, values);
  			displayMessage(context, department);
  	        // notifies user
  	        generateNotification(context, "New " + department);	
  		} else {
+ 			Log.v(TAG, "Values were null assuming from Snowball or generic message");
  			displayMessage(context, message);
- 			generateNotification(context, "Snowball Message: " + message);
+ 			//generateNotification(context, "Snowball Message: " + message);
+ 			generateNotification(context, message);
  		}
  		
     }
