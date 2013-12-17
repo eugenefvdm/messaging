@@ -10,10 +10,9 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.format.DateFormat;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -21,9 +20,9 @@ import android.widget.Toast;
  * 
  */
 public class TaskDetailActivity extends Activity implements AsyncResponse {
-	private Spinner mDepartment;
-	private EditText mTitleText;
-	private EditText mBodyText;
+	private TextView mDepartment;
+	private TextView mLocationText;
+	private TextView mClientText;
 
 	private TextView mStartText;
 
@@ -38,20 +37,19 @@ public class TaskDetailActivity extends Activity implements AsyncResponse {
 		super.onCreate(bundle);
 		setContentView(R.layout.task_edit);
 
-		mDepartment = (Spinner) findViewById(R.id.category);
-		mTitleText = (EditText) findViewById(R.id.task_edit_summary);
-		mBodyText = (EditText) findViewById(R.id.task_edit_description);		
-
-		Button startButton = (Button) findViewById(R.id.task_edit_start_button);
+		mDepartment = (TextView) findViewById(R.id.task_edit_department);
+		mLocationText = (TextView) findViewById(R.id.task_edit_location);
+		mClientText = (TextView) findViewById(R.id.task_edit_client);
 		mStartText = (TextView) findViewById(R.id.task_edit_start_text);
 
+		Button startButton = (Button) findViewById(R.id.task_edit_start_button);
 		Button stopButton = (Button) findViewById(R.id.task_edit_stop);
-
 		Button pauseButton = (Button) findViewById(R.id.task_edit_pause);
 
 		Bundle extras = getIntent().getExtras();
-		
-		// The taskUri can either come from a saved instance or it could have been passed from the list activity		
+
+		// The taskUri can either come from a saved instance or it could have
+		// been passed from the list activity
 		if (bundle != null) {
 			// todoUri retrieved from saved instance
 			todoUri = (Uri) bundle.getParcelable(MyTaskContentProvider.CONTENT_ITEM_TYPE);
@@ -65,18 +63,18 @@ public class TaskDetailActivity extends Activity implements AsyncResponse {
 				long unixTime = System.currentTimeMillis() / 1000L;
 				Date d = new Date(unixTime * 1000);
 				ContentValues values = new ContentValues();
-				values.put(TaskTable.COLUMN_START, unixTime);
+				values.put(TaskTable.COLUMN_START_ACTUAL, unixTime);
 				getContentResolver().update(todoUri, values, null, null);
-				mStartText.setText(d.toString());
+				mStartText.setText(DateFormat.format("dd/MM hh:mm", d));
 				// Send to server
 				String[] projection = {
-						TaskTable.COLUMN_CLIENT, TaskTable.COLUMN_ADDRESS,
-						TaskTable.COLUMN_DEPARTMENT, TaskTable.COLUMN_START,
+						TaskTable.COLUMN_CLIENT, TaskTable.COLUMN_CITY,
+						TaskTable.COLUMN_DEPARTMENT, TaskTable.COLUMN_START_ACTUAL,
 						TaskTable.COLUMN_TICKET_ID };
 				cursor = getContentResolver().query(todoUri, projection, null, null, null);
 				cursor.moveToFirst();
 				String ticket_id = cursor.getString(cursor.getColumnIndexOrThrow(TaskTable.COLUMN_TICKET_ID));
-				Long start_actual = cursor.getLong(cursor.getColumnIndexOrThrow(TaskTable.COLUMN_START));
+				Long start_actual = cursor.getLong(cursor.getColumnIndexOrThrow(TaskTable.COLUMN_START_ACTUAL));
 				cursor.close();
 				// String id = todoUri.getPathSegments().get(1);
 				String action = "start";
@@ -105,31 +103,19 @@ public class TaskDetailActivity extends Activity implements AsyncResponse {
 
 	private void fillData(Uri uri) {
 		String[] projection = {
-				TaskTable.COLUMN_CLIENT, TaskTable.COLUMN_ADDRESS,
-				TaskTable.COLUMN_DEPARTMENT, TaskTable.COLUMN_START,
+				TaskTable.COLUMN_CLIENT, TaskTable.COLUMN_CITY,
+				TaskTable.COLUMN_DEPARTMENT, TaskTable.COLUMN_START_ACTUAL,
 				TaskTable.COLUMN_TICKET_ID };
 		cursor = getContentResolver().query(uri, projection, null, null, null);
 		if (cursor != null) {
 			cursor.moveToFirst();
-
-			String category = cursor.getString(cursor.getColumnIndexOrThrow(TaskTable.COLUMN_DEPARTMENT));
-
-			// Fill up the Departments
-			for (int i = 0; i < mDepartment.getCount(); i++) {
-				String s = (String) mDepartment.getItemAtPosition(i);
-				if (s.equalsIgnoreCase(category)) {
-					mDepartment.setSelection(i);
-				}
-			}
-
-			// Work out real date from Unix time
-			long unixTime = cursor.getLong(cursor.getColumnIndexOrThrow(TaskTable.COLUMN_START));
-			Date d = new Date(unixTime * 1000);
-			mStartText.setText(d.toString());
-
-			mTitleText.setText(cursor.getString(cursor.getColumnIndexOrThrow(TaskTable.COLUMN_CLIENT)));
-			mBodyText.setText(cursor.getString(cursor.getColumnIndexOrThrow(TaskTable.COLUMN_ADDRESS)));
-
+			mDepartment.setText(cursor.getString(cursor.getColumnIndexOrThrow(TaskTable.COLUMN_DEPARTMENT)));
+			mLocationText.setText(cursor.getString(cursor.getColumnIndexOrThrow(TaskTable.COLUMN_CLIENT)));
+			mClientText.setText(cursor.getString(cursor.getColumnIndexOrThrow(TaskTable.COLUMN_CITY)));
+			// Obtain Unix time from stored database field and work out real date
+			long unixTime = cursor.getLong(cursor.getColumnIndexOrThrow(TaskTable.COLUMN_START_ACTUAL));			
+			Date d = new Date(unixTime * 1000);			
+			mStartText.setText(DateFormat.format("dd/MM hh:mm", d));
 			// always close the cursor
 			cursor.close();
 		}
@@ -148,23 +134,15 @@ public class TaskDetailActivity extends Activity implements AsyncResponse {
 	}
 
 	private void saveState() {
-		String category = (String) mDepartment.getSelectedItem();
-		String summary = mTitleText.getText().toString();
-		String description = mBodyText.getText().toString();
-		// String start = mStartText.getText().toString();
+		String category = (String) mDepartment.getText().toString();
+		String summary = mLocationText.getText().toString();
+		String description = mClientText.getText().toString();
 
-		// only save if either summary or description
-		// is available
-
-		if (description.length() == 0 && summary.length() == 0) {
-			return;
-		}
-
+		
 		ContentValues values = new ContentValues();
 		values.put(TaskTable.COLUMN_DEPARTMENT, category);
 		values.put(TaskTable.COLUMN_CLIENT, summary);
-		values.put(TaskTable.COLUMN_ADDRESS, description);
-		// values.put(TaskTable.COLUMN_START, start);
+		values.put(TaskTable.COLUMN_CITY, description);
 
 		if (todoUri == null) {
 			// New task

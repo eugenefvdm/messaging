@@ -4,6 +4,8 @@ import static com.messaging.push.CommonUtilities.DISPLAY_MESSAGE_ACTION;
 import static com.messaging.push.CommonUtilities.EXTRA_MESSAGE;
 import static com.messaging.push.CommonUtilities.SENDER_ID;
 
+import java.util.Date;
+
 import android.app.ListActivity;
 import android.app.LoaderManager;
 import android.content.BroadcastReceiver;
@@ -16,15 +18,20 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.ContextMenu;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ContextMenu.ContextMenuInfo;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gcm.GCMRegistrar;
@@ -46,8 +53,10 @@ public class MainActivity extends ListActivity implements
 	public static String email;
 
 	private static final int DELETE_ID = Menu.FIRST + 1;
-	// private Cursor cursor;
+
 	private SimpleCursorAdapter adapter;
+
+	private static final String TAG = "MainActivity";
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -55,7 +64,9 @@ public class MainActivity extends ListActivity implements
 
 		setContentView(R.layout.task_list);
 		this.getListView().setDividerHeight(2);
+		Log.v(TAG, "About to fillData()");
 		fillData();
+		Log.v(TAG, "Done with fillData()");
 		registerForContextMenu(getListView());
 
 		cd = new ConnectionDetector(getApplicationContext());
@@ -63,7 +74,7 @@ public class MainActivity extends ListActivity implements
 		// Check if Internet present
 		if (!cd.isConnectingToInternet()) {
 			// Internet Connection is not present
-			alert.showAlertDialog(MainActivity.this, "Internet Connection Error", "Please connect to working Internet connection", false);
+			alert.showAlertDialog(MainActivity.this, "Internet Connection Error", "Please check your internet connection", false);
 			// stop executing code by return
 			return;
 		}
@@ -80,7 +91,7 @@ public class MainActivity extends ListActivity implements
 		// Make sure the manifest was properly set - comment out this line
 		// while developing the app, then uncomment it when it's ready.
 		// http://developer.android.com/reference/com/google/android/gcm/GCMRegistrar.html#checkManifest(android.content.Context)
-		//GCMRegistrar.checkManifest(this);
+		// GCMRegistrar.checkManifest(this);
 
 		// lblMessage = (TextView) findViewById(R.id.lblMessage);
 
@@ -97,7 +108,8 @@ public class MainActivity extends ListActivity implements
 			// Device is already registered on GCM
 			if (GCMRegistrar.isRegisteredOnServer(this)) {
 				// Skips registration.
-				// For debugging we used to notify the user that the device is already registered...
+				// For debugging we used to notify the user that the device is
+				// already registered...
 				Toast.makeText(getApplicationContext(), "Ready to receive cloud messages :-)", Toast.LENGTH_LONG).show();
 			} else {
 				// Try to register again, but not in the UI thread.
@@ -140,15 +152,55 @@ public class MainActivity extends ListActivity implements
 		// Fields from the database (projection)
 		// Must include the _id column for the adapter to work
 		String[] from = new String[] {
-				TaskTable.COLUMN_CLIENT, TaskTable.COLUMN_DEPARTMENT };
+				TaskTable.COLUMN_DEPARTMENT, TaskTable.COLUMN_START,
+				TaskTable.COLUMN_CITY };
 		// Fields on the UI to which we map
-		int[] to = new int[] {
-				R.id.client, R.id.category };
+		int[] to = new int[] { R.id.department, R.id.start, R.id.city };
 
 		getLoaderManager().initLoader(0, null, this);
-		adapter = new SimpleCursorAdapter(this, R.layout.task_row, null, from, to, 0);
+		adapter = new TasksAdapter(this, R.layout.task_row, null, from, to, 0);
 
 		setListAdapter(adapter);
+	}
+	
+	public static class TasksAdapter extends SimpleCursorAdapter {
+				
+		private LayoutInflater layoutInflater;
+		private int layout;		
+
+		public TasksAdapter(Context context, int layout, Cursor c, String[] from, int[] to, int flags) {					
+			super(context, layout, c, from, to, 0);
+			this.layout = layout;
+			layoutInflater = LayoutInflater.from(context);			
+		}
+		
+		@Override		
+	    public View newView(Context context, Cursor cursor, ViewGroup parent) {			
+			View view = layoutInflater.inflate(layout, parent, false);
+	        return view;
+	    }
+		
+		@Override
+	    public void bindView(View view,Context context,Cursor cursor) {
+			
+	        String department = cursor.getString(cursor.getColumnIndex(TaskTable.COLUMN_DEPARTMENT));
+	        String city = cursor.getString(cursor.getColumnIndex(TaskTable.COLUMN_CITY));
+	        long unixStart = cursor.getLong(cursor.getColumnIndex(TaskTable.COLUMN_START));
+	        Date d = new Date(unixStart * 1000);			
+	        
+	        TextView tv1 = (TextView)view.findViewById(R.id.department);
+	        tv1.setText(department);
+	        
+	        TextView tv2 = (TextView)view.findViewById(R.id.start);
+	        tv2.setText(DateFormat.format("yyyy/dd/MM hh:mm", d));
+	        
+	        TextView tv3 = (TextView)view.findViewById(R.id.city);
+	        tv3.setText(city);
+	        
+	    }
+		
+		
+		
 	}
 
 	/**
@@ -220,8 +272,8 @@ public class MainActivity extends ListActivity implements
 	@Override
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 		String[] projection = {
-				TaskTable.COLUMN_ID, TaskTable.COLUMN_CLIENT,
-				TaskTable.COLUMN_DEPARTMENT };
+				TaskTable.COLUMN_ID, TaskTable.COLUMN_DEPARTMENT,
+				TaskTable.COLUMN_START, TaskTable.COLUMN_CITY };
 		CursorLoader cursorLoader = new CursorLoader(this, MyTaskContentProvider.CONTENT_URI, projection, null, null, null);
 		return cursorLoader;
 	}

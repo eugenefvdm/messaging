@@ -13,6 +13,7 @@ import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.util.Log;
 
 import com.google.android.gcm.GCMBaseIntentService;
@@ -56,31 +57,52 @@ public class GCMIntentService extends GCMBaseIntentService {
     	
         String message = intent.getExtras().getString("price");
         Log.i(TAG, "Received message '" + message + "' and now examining content...");
-        // TODO The AndroidHive demo return NULL first time you register, this has to be researched
+        String department = null;
+        int ticket_id = 0;
+		// TODO The AndroidHive demo return NULL first time you register, this has to be researched
         if (message == null) {
         	Log.e(TAG, "Message is NULL!");
+        } else {
+        	String action = MyTaskContentProvider.getAction(message);
+        	if (action != null) {
+        		values = MyTaskContentProvider.convertMessageToContentValues(action, message);
+        		department = values.getAsString("department");
+        		if (action.equals("insert")) {			
+         			//String department = values.getAsString("department");
+        			getContentResolver().insert(MyTaskContentProvider.CONTENT_URI, values);
+         			//displayMessage(context, department);
+        		} else if (action.equals("update")) {
+        			ticket_id = values.getAsInteger("ticket_id");
+        			Uri todoUri = Uri.parse(MyTaskContentProvider.CONTENT_URI + "/ticket" + "/" + ticket_id);        			
+        			getContentResolver().update(todoUri, values, null, null);
+        			//getContentResolver().update(MyTaskContentProvider.CONTENT_URI, values, null, null);
+        		}
+        	}
         }
+        displayMessage(context, department);
+        generateNotification(context, department);
+        
                 
-        try {
-        	values = MyTaskContentProvider.convertMessageToContentValues(message);	
-        } catch (Exception e) {
-        	Log.e(TAG, "Error occured examining content for this message '" + message + "'");
-        	values = null;
-        } 		
- 		
- 		if (values != null) {
- 			Log.v(TAG, "Values were not null assuming from Messaging Server");
- 			String department = values.getAsString("department");
- 			getContentResolver().insert(MyTaskContentProvider.CONTENT_URI, values);
- 			displayMessage(context, department);
- 	        // notifies user
- 	        generateNotification(context, "New " + department);	
- 		} else {
- 			Log.v(TAG, "Values were null assuming from Snowball or generic message");
- 			displayMessage(context, message);
- 			//generateNotification(context, "Snowball Message: " + message);
- 			generateNotification(context, message);
- 		}
+//        try {
+//        	values = MyTaskContentProvider.convertMessageToContentValues(message);	
+//        } catch (Exception e) {
+//        	Log.e(TAG, "Error occurred examining content for this message '" + message + "'");
+//        	values = null;
+//        } 		
+// 		
+// 		if (values != null) {
+// 			Log.v(TAG, "Values were not null assuming from Messaging Server");
+// 			String department = values.getAsString("department");
+// 			getContentResolver().insert(MyTaskContentProvider.CONTENT_URI, values);
+// 			displayMessage(context, department);
+// 	        // notifies user
+// 	        generateNotification(context, "New " + department);	
+// 		} else {
+// 			Log.v(TAG, "Values were null assuming from Snowball or generic message");
+// 			displayMessage(context, message);
+// 			//generateNotification(context, "Snowball Message: " + message);
+// 			generateNotification(context, message);
+// 		}
  		
     }
 

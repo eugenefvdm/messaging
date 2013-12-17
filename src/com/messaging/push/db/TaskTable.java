@@ -8,13 +8,14 @@ public class TaskTable {
 	// Database table
 	public static final String TABLE_TASK = "task";
 	public static final String COLUMN_ID = "_id";
-	// Task ID corresponds with ticket ID in WHMCS
 	public static final String COLUMN_TICKET_ID = "ticket_id";
 	public static final String COLUMN_DEPARTMENT = "department";
 	public static final String COLUMN_CLIENT = "client";
-	public static final String COLUMN_ADDRESS = "address";
-	public static final String COLUMN_START = "start_actual";
-	public static final String COLUMN_STOP = "stop_actual";
+	public static final String COLUMN_CITY = "address";
+	public static final String COLUMN_START = "start";
+	public static final String COLUMN_STOP = "stop";
+	public static final String COLUMN_START_ACTUAL = "start_actual";
+	public static final String COLUMN_STOP_ACTUAL = "stop_actual";
 
 	// Database creation SQL statement
 	private static final String DATABASE_CREATE = "create table " + TABLE_TASK
@@ -23,9 +24,11 @@ public class TaskTable {
 			+ COLUMN_TICKET_ID + " integer, "
 			+ COLUMN_DEPARTMENT + " text not null, "
 			+ COLUMN_CLIENT + " text not null,"
-			+ COLUMN_ADDRESS + " text not null,"
+			+ COLUMN_CITY + " text not null,"
 			+ COLUMN_START + " int,"
-			+ COLUMN_STOP + " int"
+			+ COLUMN_STOP + " int,"
+			+ COLUMN_START_ACTUAL + " int,"
+			+ COLUMN_STOP_ACTUAL + " int"
 			+ ");";
 
 	public static void onCreate(SQLiteDatabase database) {

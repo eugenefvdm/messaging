@@ -22,18 +22,14 @@ import com.messaging.push.contentprovider.MyTaskContentProvider;
 import com.messaging.push.db.TaskTable;
 
 /*
- * TodosOverviewActivity displays the existing todo items
- * in a list
+ * TaskListActivity displays the existing task items in a list
  * 
- * You can create new ones via the ActionBar entry "Insert"
  * You can delete existing ones via a long press on the item
  */
 
-public class TasksOverviewActivity extends ListActivity implements LoaderManager.LoaderCallbacks<Cursor> {
-//	private static final int ACTIVITY_CREATE = 0;
-//	private static final int ACTIVITY_EDIT = 1;
-	private static final int DELETE_ID = Menu.FIRST + 1;
-	// private Cursor cursor;
+public class TaskListActivity extends ListActivity implements LoaderManager.LoaderCallbacks<Cursor> {
+
+	private static final int DELETE_ID = Menu.FIRST;
 	private SimpleCursorAdapter adapter;
 
 	/** Called when the activity is first created. */
@@ -100,9 +96,9 @@ public class TasksOverviewActivity extends ListActivity implements LoaderManager
 
 		// Fields from the database (projection)
 		// Must include the _id column for the adapter to work
-		String[] from = new String[] { TaskTable.COLUMN_CLIENT, TaskTable.COLUMN_DEPARTMENT };
+		String[] from = new String[] { TaskTable.COLUMN_DEPARTMENT, TaskTable.COLUMN_START, TaskTable.COLUMN_CITY};
 		// Fields on the UI to which we map
-		int[] to = new int[] { R.id.client, R.id.category };
+		int[] to = new int[] { R.id.department, R.id.start, R.id.city };
 
 		getLoaderManager().initLoader(0, null, this);
 		adapter = new SimpleCursorAdapter(this, R.layout.task_row, null, from,
@@ -121,7 +117,7 @@ public class TasksOverviewActivity extends ListActivity implements LoaderManager
 	// creates a new loader after the initLoader () call
 	@Override
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-		String[] projection = { TaskTable.COLUMN_ID, TaskTable.COLUMN_CLIENT, TaskTable.COLUMN_DEPARTMENT };
+		String[] projection = { TaskTable.COLUMN_ID, TaskTable.COLUMN_DEPARTMENT, TaskTable.COLUMN_CITY };
 		CursorLoader cursorLoader = new CursorLoader(this,
 				MyTaskContentProvider.CONTENT_URI, projection, null, null, null);
 		return cursorLoader;

@@ -2,7 +2,7 @@ package com.messaging.push.contentprovider;
 
 import java.util.Arrays;
 import java.util.HashSet;
-
+import java.util.Iterator;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -20,7 +20,18 @@ import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
 
+/**
+ * Content Provider for Tasks
+ * 
+ * In order to get ticket_ids updated instead of _id, I added TASK_TICKET_ID and CONTENT_ITEM_TICKET everywhere
+ * At present update is only called from GCM intent
+ * 
+ * @author eugene
+ *
+ */
 public class MyTaskContentProvider extends ContentProvider {
+
+	private static final String TAG = "MyTaskContentProvider";
 
 	// database
 	private TaskDatabaseHelper database;
@@ -28,30 +39,27 @@ public class MyTaskContentProvider extends ContentProvider {
 	// used for the UriMacher
 	private static final int TASKS = 10;
 	private static final int TASK_ID = 20;
+	private static final int TASK_TICKET_ID = 30;
 
 	private static final String AUTHORITY = "com.messaging.push";
 
 	private static final String BASE_PATH = "tasks";
-	public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY
-			+ "/" + BASE_PATH);
+	public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/" + BASE_PATH);
 
-	public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE
-			+ "/tasks";
-	public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE
-			+ "/task";
+	public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/tasks";
+	public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/task";
+	public static final String CONTENT_ITEM_TICKET = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/ticket";
 
-	private static final UriMatcher sURIMatcher = new UriMatcher(
-			UriMatcher.NO_MATCH);
+	private static final UriMatcher sURIMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 	static {
 		sURIMatcher.addURI(AUTHORITY, BASE_PATH, TASKS);
 		sURIMatcher.addURI(AUTHORITY, BASE_PATH + "/#", TASK_ID);
+		sURIMatcher.addURI(AUTHORITY, BASE_PATH + "/ticket" + "/#", TASK_TICKET_ID);
 	}
 
 	@Override
 	public boolean onCreate() {
-		Log.v("database MyTaskContentProvider", "onCreate start");
 		database = new TaskDatabaseHelper(getContext());
-		Log.v("database", "onCreate end");
 		return false;
 	}
 
@@ -74,16 +82,18 @@ public class MyTaskContentProvider extends ContentProvider {
 			break;
 		case TASK_ID:
 			// adding the ID to the original query
-			queryBuilder.appendWhere(TaskTable.COLUMN_ID + "="
-					+ uri.getLastPathSegment());
+			queryBuilder.appendWhere(TaskTable.COLUMN_ID + "=" + uri.getLastPathSegment());
 			break;
+		case TASK_TICKET_ID:
+			// adding the ID to the original query
+			queryBuilder.appendWhere(TaskTable.COLUMN_TICKET_ID + "=" + uri.getLastPathSegment());
+			break;	
 		default:
 			throw new IllegalArgumentException("Unknown URI: " + uri);
 		}
 
 		SQLiteDatabase db = database.getWritableDatabase();
-		Cursor cursor = queryBuilder.query(db, projection, selection,
-				selectionArgs, null, null, sortOrder);
+		Cursor cursor = queryBuilder.query(db, projection, selection, selectionArgs, null, null, sortOrder);
 		// make sure that potential listeners are getting notified
 		cursor.setNotificationUri(getContext().getContentResolver(), uri);
 
@@ -119,18 +129,22 @@ public class MyTaskContentProvider extends ContentProvider {
 		int rowsDeleted = 0;
 		switch (uriType) {
 		case TASKS:
-			rowsDeleted = sqlDB.delete(TaskTable.TABLE_TASK, selection,
-					selectionArgs);
+			rowsDeleted = sqlDB.delete(TaskTable.TABLE_TASK, selection, selectionArgs);
 			break;
 		case TASK_ID:
 			String id = uri.getLastPathSegment();
 			if (TextUtils.isEmpty(selection)) {
-				rowsDeleted = sqlDB.delete(TaskTable.TABLE_TASK,
-						TaskTable.COLUMN_ID + "=" + id, null);
+				rowsDeleted = sqlDB.delete(TaskTable.TABLE_TASK, TaskTable.COLUMN_ID + "=" + id, null);
 			} else {
-				rowsDeleted = sqlDB.delete(TaskTable.TABLE_TASK,
-						TaskTable.COLUMN_ID + "=" + id + " and " + selection,
-						selectionArgs);
+				rowsDeleted = sqlDB.delete(TaskTable.TABLE_TASK, TaskTable.COLUMN_ID + "=" + id + " and " + selection, selectionArgs);
+			}
+			break;
+		case TASK_TICKET_ID:
+			String ticket_id = uri.getLastPathSegment();
+			if (TextUtils.isEmpty(selection)) {
+				rowsDeleted = sqlDB.delete(TaskTable.TABLE_TASK, TaskTable.COLUMN_TICKET_ID + "=" + ticket_id, null);
+			} else {
+				rowsDeleted = sqlDB.delete(TaskTable.TABLE_TASK, TaskTable.COLUMN_TICKET_ID + "=" + ticket_id + " and " + selection, selectionArgs);
 			}
 			break;
 		default:
@@ -149,18 +163,22 @@ public class MyTaskContentProvider extends ContentProvider {
 		int rowsUpdated = 0;
 		switch (uriType) {
 		case TASKS:
-			rowsUpdated = sqlDB.update(TaskTable.TABLE_TASK, values, selection,
-					selectionArgs);
+			rowsUpdated = sqlDB.update(TaskTable.TABLE_TASK, values, selection, selectionArgs);
 			break;
 		case TASK_ID:
 			String id = uri.getLastPathSegment();
 			if (TextUtils.isEmpty(selection)) {
-				rowsUpdated = sqlDB.update(TaskTable.TABLE_TASK, values,
-						TaskTable.COLUMN_ID + "=" + id, null);
+				rowsUpdated = sqlDB.update(TaskTable.TABLE_TASK, values, TaskTable.COLUMN_ID + "=" + id, null);
 			} else {
-				rowsUpdated = sqlDB.update(TaskTable.TABLE_TASK, values,
-						TaskTable.COLUMN_ID + "=" + id + " and " + selection,
-						selectionArgs);
+				rowsUpdated = sqlDB.update(TaskTable.TABLE_TASK, values, TaskTable.COLUMN_ID + "=" + id + " and " + selection, selectionArgs);
+			}
+			break;
+		case TASK_TICKET_ID:
+			String ticket_id = uri.getLastPathSegment();
+			if (TextUtils.isEmpty(selection)) {
+				rowsUpdated = sqlDB.update(TaskTable.TABLE_TASK, values, TaskTable.COLUMN_TICKET_ID + "=" + ticket_id, null);
+			} else {
+				rowsUpdated = sqlDB.update(TaskTable.TABLE_TASK, values, TaskTable.COLUMN_TICKET_ID + "=" + ticket_id + " and " + selection, selectionArgs);
 			}
 			break;
 		default:
@@ -171,55 +189,76 @@ public class MyTaskContentProvider extends ContentProvider {
 	}
 
 	private void checkColumns(String[] projection) {
-		String[] available = { 
-			TaskTable.COLUMN_TICKET_ID,
-			TaskTable.COLUMN_DEPARTMENT,
-			TaskTable.COLUMN_CLIENT,
-			TaskTable.COLUMN_ADDRESS,
-			TaskTable.COLUMN_ID,
-			TaskTable.COLUMN_START
-		};
-		//String[] available = { TaskTable.COLUMN_DEPARTMENT,	TaskTable.COLUMN_CLIENT, TaskTable.COLUMN_ADDRESS,	TaskTable.COLUMN_ID };
+		String[] available = {
+				TaskTable.COLUMN_TICKET_ID, TaskTable.COLUMN_DEPARTMENT,
+				TaskTable.COLUMN_CLIENT, TaskTable.COLUMN_CITY,
+				TaskTable.COLUMN_ID, TaskTable.COLUMN_START_ACTUAL,
+				TaskTable.COLUMN_START, };
+		// String[] available = { TaskTable.COLUMN_DEPARTMENT,
+		// TaskTable.COLUMN_CLIENT, TaskTable.COLUMN_ADDRESS,
+		// TaskTable.COLUMN_ID };
 		if (projection != null) {
-			HashSet<String> requestedColumns = new HashSet<String>(
-					Arrays.asList(projection));
-			HashSet<String> availableColumns = new HashSet<String>(
-					Arrays.asList(available));
+			HashSet<String> requestedColumns = new HashSet<String>(Arrays.asList(projection));
+			HashSet<String> availableColumns = new HashSet<String>(Arrays.asList(available));
 			// check if all columns which are requested are available
 			if (!availableColumns.containsAll(requestedColumns)) {
-				throw new IllegalArgumentException(
-						"Unknown columns in projection");
+				throw new IllegalArgumentException("Unknown columns in projection");
 			}
 		}
 	}
-	
-	public static ContentValues convertMessageToContentValues(String message) {
+
+	/**
+	 * Determine action by evaluating JSON from message
+	 * 
+	 * @param message
+	 * @return action or NULL if no action
+	 */
+	public static String getAction(String message) {
+		JSONObject jObject = null;
+		try {
+			jObject = new JSONObject(message);
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return null;
+		}
+		Iterator<?> iter = jObject.keys();
+		String action = null;
+		while (iter.hasNext()) {
+			action = (String) iter.next();
+		}
+		Log.v(TAG, "The action is " + action);
+		return action;
+	}
+
+	public static ContentValues convertMessageToContentValues(String action,
+			String message) {
+		JSONObject jObject = null;
+
 		int ticket_id = 0;
 		String department = null;
 		String client = null;
 		String address = null;
+		int start = 0;
 
-		JSONObject jObject;
 		try {
 			jObject = new JSONObject(message);
-			ticket_id = jObject.getInt("ticket_id");
-			department = jObject.getString("department");
-			client = jObject.getString("client");
-			address = jObject.getString("address");
+			JSONObject payload = jObject.getJSONObject(action);
+			ticket_id = payload.getInt("ticket_id");
+			department = payload.getString("department");
+			client = payload.getString("client");
+			address = payload.getString("address");
+			start = payload.getInt("start");
 		} catch (JSONException e) {
-			Log.e("Check JSON", "This was not a JSONObject or an error occured so dumping StackTrace");
-			//Log.e("JSON", "Error parsing JSON in MainActivity");
+			Log.e(TAG, "Error parsing JSON");
 			e.printStackTrace();
-			return null;
 		}
-//		Toast.makeText(getApplicationContext(), "Department: " + department,
-//				Toast.LENGTH_LONG).show();
 
 		ContentValues values = new ContentValues();
 		values.put(TaskTable.COLUMN_TICKET_ID, ticket_id);
 		values.put(TaskTable.COLUMN_DEPARTMENT, department);
 		values.put(TaskTable.COLUMN_CLIENT, client);
-		values.put(TaskTable.COLUMN_ADDRESS, address);
+		values.put(TaskTable.COLUMN_CITY, address);
+		values.put(TaskTable.COLUMN_START, start);
 		return values;
 	}
 

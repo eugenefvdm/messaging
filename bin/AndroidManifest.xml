@@ -64,12 +64,12 @@
         </activity>
         
         <activity
-            android:name="com.messaging.push.TasksOverviewActivity"
+            android:name="com.messaging.push.TaskListActivity"
             android:label="@string/app_name" >            
         </activity>
         <activity
             android:name="com.messaging.push.TaskDetailActivity"
-            android:windowSoftInputMode="stateVisible|adjustResize" >
+            >            
         </activity>
         
         <provider
