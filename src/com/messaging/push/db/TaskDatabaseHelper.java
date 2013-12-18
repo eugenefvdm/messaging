@@ -9,7 +9,7 @@ import android.util.Log;
 public class TaskDatabaseHelper extends SQLiteOpenHelper {
 
   private static final String DATABASE_NAME = "tasktable.db";
-  private static final int DATABASE_VERSION = 13;
+  private static final int DATABASE_VERSION = 16;
 
   public TaskDatabaseHelper(Context context) {
     super(context, DATABASE_NAME, null, DATABASE_VERSION);

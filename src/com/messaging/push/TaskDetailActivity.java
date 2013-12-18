@@ -1,6 +1,7 @@
 package com.messaging.push;
 
 import java.util.Date;
+import java.util.TimeZone;
 
 import com.messaging.push.contentprovider.MyTaskContentProvider;
 import com.messaging.push.db.TaskTable;
@@ -60,7 +61,9 @@ public class TaskDetailActivity extends Activity implements AsyncResponse {
 
 		startButton.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
-				long unixTime = System.currentTimeMillis() / 1000L;
+				//int gmtOffset = TimeZone.getDefault().getRawOffset();
+				//long unixTime = (System.currentTimeMillis() + gmtOffset) / 1000L;
+				long unixTime = (System.currentTimeMillis()) / 1000L;
 				Date d = new Date(unixTime * 1000);
 				ContentValues values = new ContentValues();
 				values.put(TaskTable.COLUMN_START_ACTUAL, unixTime);

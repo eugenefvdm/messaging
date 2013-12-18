@@ -1,5 +1,7 @@
 /*
  * GCMIntentService.java
+ * 
+ * Handles all incoming messages and takes appropriate action
  */
 
 package com.messaging.push;
@@ -54,13 +56,14 @@ public class GCMIntentService extends GCMBaseIntentService {
     @Override
     protected void onMessage(Context context, Intent intent) {
     	ContentValues values;
-    	
+    	String messageType = "";
         String message = intent.getExtras().getString("price");
         Log.i(TAG, "Received message '" + message + "' and now examining content...");
         String department = null;
         int ticket_id = 0;
 		// TODO The AndroidHive demo return NULL first time you register, this has to be researched
         if (message == null) {
+        	messageType = "First time registration! Welcome!";
         	Log.e(TAG, "Message is NULL!");
         } else {
         	String action = MyTaskContentProvider.getAction(message);
@@ -68,42 +71,25 @@ public class GCMIntentService extends GCMBaseIntentService {
         		values = MyTaskContentProvider.convertMessageToContentValues(action, message);
         		department = values.getAsString("department");
         		if (action.equals("insert")) {			
-         			//String department = values.getAsString("department");
         			getContentResolver().insert(MyTaskContentProvider.CONTENT_URI, values);
-         			//displayMessage(context, department);
+        			messageType = "New " + department;
         		} else if (action.equals("update")) {
         			ticket_id = values.getAsInteger("ticket_id");
         			Uri todoUri = Uri.parse(MyTaskContentProvider.CONTENT_URI + "/ticket" + "/" + ticket_id);        			
         			getContentResolver().update(todoUri, values, null, null);
-        			//getContentResolver().update(MyTaskContentProvider.CONTENT_URI, values, null, null);
+        			messageType = "Updated " + department;
+        		} else if (action.equals("delete")) {
+        			ticket_id = values.getAsInteger("ticket_id");
+        			Uri todoUri = Uri.parse(MyTaskContentProvider.CONTENT_URI + "/ticket" + "/" + ticket_id);        			
+        			getContentResolver().delete(todoUri, null, null);
+        			messageType = "Deleted " + department;
         		}
+        	} else {
+        		messageType = "System Message: " + message;
         	}
         }
-        displayMessage(context, department);
-        generateNotification(context, department);
-        
-                
-//        try {
-//        	values = MyTaskContentProvider.convertMessageToContentValues(message);	
-//        } catch (Exception e) {
-//        	Log.e(TAG, "Error occurred examining content for this message '" + message + "'");
-//        	values = null;
-//        } 		
-// 		
-// 		if (values != null) {
-// 			Log.v(TAG, "Values were not null assuming from Messaging Server");
-// 			String department = values.getAsString("department");
-// 			getContentResolver().insert(MyTaskContentProvider.CONTENT_URI, values);
-// 			displayMessage(context, department);
-// 	        // notifies user
-// 	        generateNotification(context, "New " + department);	
-// 		} else {
-// 			Log.v(TAG, "Values were null assuming from Snowball or generic message");
-// 			displayMessage(context, message);
-// 			//generateNotification(context, "Snowball Message: " + message);
-// 			generateNotification(context, message);
-// 		}
- 		
+        displayMessage(context, messageType);
+        generateNotification(context, messageType);                    
     }
 
     /**
@@ -140,7 +126,7 @@ public class GCMIntentService extends GCMBaseIntentService {
      * Issues a notification to inform the user that server has sent a message.
      */
     private static void generateNotification(Context context, String message) {
-        int icon = R.drawable.ic_launcher;
+        int icon = R.drawable.snowball;
         long when = System.currentTimeMillis();
         NotificationManager notificationManager = (NotificationManager)
                 context.getSystemService(Context.NOTIFICATION_SERVICE);

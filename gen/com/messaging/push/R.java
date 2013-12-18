@@ -19,13 +19,14 @@ public final class R {
         public static final int fail=0x7f020000;
         public static final int ic_action_search=0x7f020001;
         public static final int ic_launcher=0x7f020002;
-        public static final int reminder=0x7f020003;
-        public static final int success=0x7f020004;
+        public static final int reminder1=0x7f020003;
+        public static final int snowball=0x7f020004;
+        public static final int success=0x7f020005;
     }
     public static final class id {
         public static final int TableRow01=0x7f080010;
+        public static final int address=0x7f080016;
         public static final int btnRegister=0x7f080003;
-        public static final int city=0x7f080016;
         public static final int delete_all=0x7f080018;
         public static final int department=0x7f080014;
         public static final int icon=0x7f080013;

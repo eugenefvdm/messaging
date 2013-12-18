@@ -153,9 +153,10 @@ public class MainActivity extends ListActivity implements
 		// Must include the _id column for the adapter to work
 		String[] from = new String[] {
 				TaskTable.COLUMN_DEPARTMENT, TaskTable.COLUMN_START,
+				TaskTable.COLUMN_ADDRESS1, TaskTable.COLUMN_ADDRESS2,
 				TaskTable.COLUMN_CITY };
 		// Fields on the UI to which we map
-		int[] to = new int[] { R.id.department, R.id.start, R.id.city };
+		int[] to = new int[] { R.id.department, R.id.start, R.id.address };
 
 		getLoaderManager().initLoader(0, null, this);
 		adapter = new TasksAdapter(this, R.layout.task_row, null, from, to, 0);
@@ -184,6 +185,8 @@ public class MainActivity extends ListActivity implements
 	    public void bindView(View view,Context context,Cursor cursor) {
 			
 	        String department = cursor.getString(cursor.getColumnIndex(TaskTable.COLUMN_DEPARTMENT));
+	        String address1 = cursor.getString(cursor.getColumnIndex(TaskTable.COLUMN_ADDRESS1));
+	        String address2 = cursor.getString(cursor.getColumnIndex(TaskTable.COLUMN_ADDRESS2));
 	        String city = cursor.getString(cursor.getColumnIndex(TaskTable.COLUMN_CITY));
 	        long unixStart = cursor.getLong(cursor.getColumnIndex(TaskTable.COLUMN_START));
 	        Date d = new Date(unixStart * 1000);			
@@ -192,15 +195,12 @@ public class MainActivity extends ListActivity implements
 	        tv1.setText(department);
 	        
 	        TextView tv2 = (TextView)view.findViewById(R.id.start);
-	        tv2.setText(DateFormat.format("yyyy/dd/MM hh:mm", d));
+	        tv2.setText(DateFormat.format("E d hh:mm", d));
 	        
-	        TextView tv3 = (TextView)view.findViewById(R.id.city);
-	        tv3.setText(city);
+	        TextView tv3 = (TextView)view.findViewById(R.id.address);
+	        tv3.setText(address1 + ", " + address2 + "," + city);
 	        
-	    }
-		
-		
-		
+	    }		
 	}
 
 	/**
@@ -273,7 +273,8 @@ public class MainActivity extends ListActivity implements
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 		String[] projection = {
 				TaskTable.COLUMN_ID, TaskTable.COLUMN_DEPARTMENT,
-				TaskTable.COLUMN_START, TaskTable.COLUMN_CITY };
+				TaskTable.COLUMN_START, TaskTable.COLUMN_ADDRESS1,
+				TaskTable.COLUMN_ADDRESS2, TaskTable.COLUMN_CITY };
 		CursorLoader cursorLoader = new CursorLoader(this, MyTaskContentProvider.CONTENT_URI, projection, null, null, null);
 		return cursorLoader;
 	}

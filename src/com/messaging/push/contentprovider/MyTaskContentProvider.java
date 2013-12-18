@@ -191,7 +191,8 @@ public class MyTaskContentProvider extends ContentProvider {
 	private void checkColumns(String[] projection) {
 		String[] available = {
 				TaskTable.COLUMN_TICKET_ID, TaskTable.COLUMN_DEPARTMENT,
-				TaskTable.COLUMN_CLIENT, TaskTable.COLUMN_CITY,
+				TaskTable.COLUMN_CLIENT, TaskTable.COLUMN_ADDRESS1,
+				TaskTable.COLUMN_ADDRESS2, TaskTable.COLUMN_CITY,
 				TaskTable.COLUMN_ID, TaskTable.COLUMN_START_ACTUAL,
 				TaskTable.COLUMN_START, };
 		// String[] available = { TaskTable.COLUMN_DEPARTMENT,
@@ -230,14 +231,15 @@ public class MyTaskContentProvider extends ContentProvider {
 		return action;
 	}
 
-	public static ContentValues convertMessageToContentValues(String action,
-			String message) {
+	public static ContentValues convertMessageToContentValues(String action, String message) {
 		JSONObject jObject = null;
 
 		int ticket_id = 0;
 		String department = null;
 		String client = null;
-		String address = null;
+		String address1 = null;
+		String address2 = null;
+		String city = null;
 		int start = 0;
 
 		try {
@@ -246,7 +248,9 @@ public class MyTaskContentProvider extends ContentProvider {
 			ticket_id = payload.getInt("ticket_id");
 			department = payload.getString("department");
 			client = payload.getString("client");
-			address = payload.getString("address");
+			address1 = payload.getString("address1");
+			address2 = payload.getString("address2");
+			city = payload.getString("city");
 			start = payload.getInt("start");
 		} catch (JSONException e) {
 			Log.e(TAG, "Error parsing JSON");
@@ -257,7 +261,9 @@ public class MyTaskContentProvider extends ContentProvider {
 		values.put(TaskTable.COLUMN_TICKET_ID, ticket_id);
 		values.put(TaskTable.COLUMN_DEPARTMENT, department);
 		values.put(TaskTable.COLUMN_CLIENT, client);
-		values.put(TaskTable.COLUMN_CITY, address);
+		values.put(TaskTable.COLUMN_ADDRESS1, address1);
+		values.put(TaskTable.COLUMN_ADDRESS2, address2);
+		values.put(TaskTable.COLUMN_CITY, city);
 		values.put(TaskTable.COLUMN_START, start);
 		return values;
 	}

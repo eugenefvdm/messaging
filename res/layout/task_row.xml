@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="4dp"
         android:layout_marginRight="8dp"        
-        android:src="@drawable/reminder" >
+        android:src="@drawable/snowball" >
     </ImageView>
 
     <TextView
@@ -26,8 +26,7 @@
     <TextView
         android:id="@+id/start"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_toRightOf="@id/department"
+        android:layout_height="wrap_content"        
         android:layout_alignParentRight="true"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:text="14 Mar"         
@@ -35,16 +34,14 @@
     </TextView>
     
     <TextView
-        android:id="@+id/city"
+        android:id="@+id/address"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_toRightOf="@id/icon"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:layout_below="@id/department"                                
-        android:text="City"         
+        android:text="Address"         
         >
     </TextView>
-    
-    
 
 </RelativeLayout> 
