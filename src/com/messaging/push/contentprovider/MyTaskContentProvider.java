@@ -193,11 +193,8 @@ public class MyTaskContentProvider extends ContentProvider {
 				TaskTable.COLUMN_TICKET_ID, TaskTable.COLUMN_DEPARTMENT,
 				TaskTable.COLUMN_CLIENT, TaskTable.COLUMN_ADDRESS1,
 				TaskTable.COLUMN_ADDRESS2, TaskTable.COLUMN_CITY,
-				TaskTable.COLUMN_ID, TaskTable.COLUMN_START_ACTUAL,
-				TaskTable.COLUMN_START, };
-		// String[] available = { TaskTable.COLUMN_DEPARTMENT,
-		// TaskTable.COLUMN_CLIENT, TaskTable.COLUMN_ADDRESS,
-		// TaskTable.COLUMN_ID };
+				TaskTable.COLUMN_ID, TaskTable.COLUMN_START,
+				TaskTable.COLUMN_START_ACTUAL, TaskTable.COLUMN_STOP, TaskTable.COLUMN_STOP_ACTUAL };		
 		if (projection != null) {
 			HashSet<String> requestedColumns = new HashSet<String>(Arrays.asList(projection));
 			HashSet<String> availableColumns = new HashSet<String>(Arrays.asList(available));

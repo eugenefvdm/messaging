@@ -21,7 +21,10 @@ public final class R {
         public static final int ic_launcher=0x7f020002;
         public static final int reminder1=0x7f020003;
         public static final int snowball=0x7f020004;
-        public static final int success=0x7f020005;
+        public static final int snowball_launcher_72px=0x7f020005;
+        public static final int snowball_list_48px=0x7f020006;
+        public static final int snowball_statusbar_36px=0x7f020007;
+        public static final int success=0x7f020008;
     }
     public static final class id {
         public static final int TableRow01=0x7f080010;
@@ -39,12 +42,12 @@ public final class R {
         public static final int tableRow2=0x7f08000d;
         public static final int task_edit_client=0x7f080005;
         public static final int task_edit_department=0x7f080004;
+        public static final int task_edit_finish=0x7f080008;
         public static final int task_edit_location=0x7f080006;
         public static final int task_edit_pause=0x7f080009;
         public static final int task_edit_start_button=0x7f080007;
         public static final int task_edit_start_label=0x7f08000b;
         public static final int task_edit_start_text=0x7f08000c;
-        public static final int task_edit_stop=0x7f080008;
         public static final int task_edit_stop_label=0x7f08000e;
         public static final int task_edit_stop_text=0x7f08000f;
         public static final int task_edit_total_label=0x7f080011;

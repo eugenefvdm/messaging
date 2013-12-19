@@ -37,15 +37,17 @@
         android:text="@string/task_button_start" />
 
     <Button
-        android:id="@+id/task_edit_stop"
+        android:id="@+id/task_edit_finish"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:enabled="false"
         android:text="@string/task_button_stop" />
 
     <Button
         android:id="@+id/task_edit_pause"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:enabled="false"
         android:text="@string/task_button_on_hold" />
 
     <TableLayout

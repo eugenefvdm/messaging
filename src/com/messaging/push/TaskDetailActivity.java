@@ -1,7 +1,6 @@
 package com.messaging.push;
 
 import java.util.Date;
-import java.util.TimeZone;
 
 import com.messaging.push.contentprovider.MyTaskContentProvider;
 import com.messaging.push.db.TaskTable;
@@ -26,6 +25,11 @@ public class TaskDetailActivity extends Activity implements AsyncResponse {
 	private TextView mClientText;
 
 	private TextView mStartText;
+	private TextView mStopText;
+	
+	private Button startButton;
+	private Button finishButton;
+	private Button pauseButton;
 
 	private Uri todoUri;
 
@@ -41,16 +45,17 @@ public class TaskDetailActivity extends Activity implements AsyncResponse {
 		mDepartment = (TextView) findViewById(R.id.task_edit_department);
 		mLocationText = (TextView) findViewById(R.id.task_edit_location);
 		mClientText = (TextView) findViewById(R.id.task_edit_client);
+		
 		mStartText = (TextView) findViewById(R.id.task_edit_start_text);
+		mStopText = (TextView) findViewById(R.id.task_edit_stop_text);
 
-		Button startButton = (Button) findViewById(R.id.task_edit_start_button);
-		Button stopButton = (Button) findViewById(R.id.task_edit_stop);
-		Button pauseButton = (Button) findViewById(R.id.task_edit_pause);
+		startButton = (Button) findViewById(R.id.task_edit_start_button);
+		finishButton = (Button) findViewById(R.id.task_edit_finish);
+		pauseButton = (Button) findViewById(R.id.task_edit_pause);
 
 		Bundle extras = getIntent().getExtras();
 
-		// The taskUri can either come from a saved instance or it could have
-		// been passed from the list activity
+		// The taskUri can either come from a saved instance or it could have been passed from the list activity
 		if (bundle != null) {
 			// todoUri retrieved from saved instance
 			todoUri = (Uri) bundle.getParcelable(MyTaskContentProvider.CONTENT_ITEM_TYPE);
@@ -60,31 +65,46 @@ public class TaskDetailActivity extends Activity implements AsyncResponse {
 		fillData(todoUri);
 
 		startButton.setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				//int gmtOffset = TimeZone.getDefault().getRawOffset();
-				//long unixTime = (System.currentTimeMillis() + gmtOffset) / 1000L;
+			public void onClick(View v) {				
 				long unixTime = (System.currentTimeMillis()) / 1000L;
 				Date d = new Date(unixTime * 1000);
-				ContentValues values = new ContentValues();
-				values.put(TaskTable.COLUMN_START_ACTUAL, unixTime);
-				getContentResolver().update(todoUri, values, null, null);
-				mStartText.setText(DateFormat.format("dd/MM hh:mm", d));
-				// Send to server
-				String[] projection = {
-						TaskTable.COLUMN_CLIENT, TaskTable.COLUMN_CITY,
-						TaskTable.COLUMN_DEPARTMENT, TaskTable.COLUMN_START_ACTUAL,
-						TaskTable.COLUMN_TICKET_ID };
-				cursor = getContentResolver().query(todoUri, projection, null, null, null);
-				cursor.moveToFirst();
-				String ticket_id = cursor.getString(cursor.getColumnIndexOrThrow(TaskTable.COLUMN_TICKET_ID));
-				Long start_actual = cursor.getLong(cursor.getColumnIndexOrThrow(TaskTable.COLUMN_START_ACTUAL));
-				cursor.close();
-				// String id = todoUri.getPathSegments().get(1);
-				String action = "start";
-				// String id = String.valueOf(unixTime);
-				asyncTask = new HTTPTask();
-				asyncTask.delegate = TaskDetailActivity.this;
-				asyncTask.execute("http://196.201.6.235/whmcs/modules/addons/messaging/action.php?action=" + action + "&id=" + ticket_id + "&start_actual=" + start_actual);
+				mStartText.setText(DateFormat.format("dd/MM hh:mm", d));				
+				updateTimerData("start", unixTime);
+				pauseButton.setEnabled(true);
+				finishButton.setEnabled(true);
+				startButton.setEnabled(false);
+//				getContentResolver().update(todoUri, values, null, null);
+//				mStartText.setText(DateFormat.format("dd/MM hh:mm", d));
+//				// Send to server
+//				String[] projection = {
+//						TaskTable.COLUMN_CLIENT, TaskTable.COLUMN_CITY,
+//						TaskTable.COLUMN_DEPARTMENT, TaskTable.COLUMN_START_ACTUAL,
+//						TaskTable.COLUMN_TICKET_ID };
+//				cursor = getContentResolver().query(todoUri, projection, null, null, null);
+//				cursor.moveToFirst();
+//				String ticket_id = cursor.getString(cursor.getColumnIndexOrThrow(TaskTable.COLUMN_TICKET_ID));
+//				Long start_actual = cursor.getLong(cursor.getColumnIndexOrThrow(TaskTable.COLUMN_START_ACTUAL));
+//				cursor.close();
+//				// String id = todoUri.getPathSegments().get(1);
+//				String action = "start";
+//				// String id = String.valueOf(unixTime);
+//				asyncTask = new HTTPTask();
+//				asyncTask.delegate = TaskDetailActivity.this;
+//				asyncTask.execute("http://196.201.6.235/whmcs/modules/addons/messaging/action.php?action=" + action + "&id=" + ticket_id + "&start_actual=" + start_actual);
+//				pauseButton.setEnabled(true);
+//				finishButton.setEnabled(true);
+//				startButton.setEnabled(false);
+			}
+		});
+		
+		finishButton.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {				
+				long unixTime = (System.currentTimeMillis()) / 1000L;
+				Date d = new Date(unixTime * 1000);
+				mStopText.setText(DateFormat.format("dd/MM hh:mm", d));
+				updateTimerData("stop", unixTime);												
+				pauseButton.setEnabled(false);
+				finishButton.setEnabled(false);				
 			}
 		});
 
@@ -95,13 +115,34 @@ public class TaskDetailActivity extends Activity implements AsyncResponse {
 			}
 		});
 
-		stopButton.setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				// Put a stop time next to this task in the database
-
-			}
-		});
-
+	}
+	
+	/**
+	 * Update SQLite with values (start or stop) and sends message to messaging server to indicate such
+	 * 
+	 * @param values
+	 * @param action
+	 */
+	private void updateTimerData(String action, long unixTime) {
+		ContentValues values = new ContentValues();		
+		if (action.equals("start")) {
+			values.put(TaskTable.COLUMN_START_ACTUAL, unixTime);				
+		} else if (action.equals("stop")) {
+			values.put(TaskTable.COLUMN_STOP_ACTUAL, unixTime);
+		}		
+		getContentResolver().update(todoUri, values, null, null);		
+		String[] projection = {
+				TaskTable.COLUMN_TICKET_ID, TaskTable.COLUMN_START_ACTUAL,
+				TaskTable.COLUMN_STOP_ACTUAL };
+		cursor = getContentResolver().query(todoUri, projection, null, null, null);
+		cursor.moveToFirst();
+		String ticket_id = cursor.getString(cursor.getColumnIndexOrThrow(TaskTable.COLUMN_TICKET_ID));
+		
+		cursor.close();
+		asyncTask = new HTTPTask();
+		asyncTask.delegate = TaskDetailActivity.this;
+		// TODO Move URL to preferences
+		asyncTask.execute("http://196.201.6.235/whmcs/modules/addons/messaging/action.php?action=" + action + "&id=" + ticket_id + "&value=" + unixTime);
 	}
 
 	private void fillData(Uri uri) {

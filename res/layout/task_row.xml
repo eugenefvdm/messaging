@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="4dp"
         android:layout_marginRight="8dp"        
-        android:src="@drawable/snowball" >
+        android:src="@drawable/snowball_list_48px" >
     </ImageView>
 
     <TextView
