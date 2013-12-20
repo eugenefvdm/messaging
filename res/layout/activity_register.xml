@@ -2,37 +2,41 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical" >    
+    android:orientation="vertical" 
+    android:layout_marginLeft="20dip"
+    android:layout_marginRight="20dip"
+    >    
      
      <TextView android:layout_width="fill_parent"
          android:layout_height="wrap_content"
-         android:text="Device Name:"
-         android:layout_marginLeft="10dip"
-         android:layout_marginRight="10dip"
+         android:text="@string/register_device_name"         
          android:layout_marginTop="20dip"/>
      
      <EditText android:id="@+id/txtName" 
          android:layout_width="fill_parent"
          android:layout_height="wrap_content"
          android:layout_margin="10dip"
-         android:layout_marginBottom="20dip"/>
+         android:layout_marginBottom="20dip"
+         android:inputType="text"
+         />
      
      <TextView android:layout_width="fill_parent"
          android:layout_height="wrap_content"
-         android:text="Email:"
-         android:layout_marginLeft="10dip"
-         android:layout_marginRight="10dip"/>
+         android:text="@string/register_email"
+         />         
      
      <EditText android:id="@+id/txtEmail" 
          android:layout_width="fill_parent"
          android:layout_height="wrap_content"
          android:layout_margin="10dip"
-         android:layout_marginBottom="20dip"/>
+         android:layout_marginBottom="20dip"     
+         android:inputType="textEmailAddress"    
+         />
      
      <Button android:id="@+id/btnRegister"
          android:layout_width="fill_parent"
          android:layout_height="wrap_content"
-         android:text="Register"
+         android:text="@string/register_register"
          android:layout_margin="10dip"/>
 
 </LinearLayout>

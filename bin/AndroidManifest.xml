@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.messaging.push"
+    package="com.snowball"
     android:versionCode="1"
     android:versionName="1.0" >
 
     <!-- GCM requires Android SDK version 2.2 (API level 8) or above. -->
     <uses-sdk
         android:minSdkVersion="15"
-         />
+        android:targetSdkVersion="19" />
 
     <!-- GCM connects to Internet Services. -->
     <uses-permission android:name="android.permission.INTERNET" />
@@ -20,10 +20,10 @@
 
     <!-- Creates a custom permission so only this application can receive its messages. -->
     <permission
-        android:name="com.messaging.push.permission.C2D_MESSAGE"
+        android:name="com.snowball.permission.C2D_MESSAGE"
         android:protectionLevel="signature" />
 
-    <uses-permission android:name="com.messaging.push.permission.C2D_MESSAGE" />
+    <uses-permission android:name="com.snowball.permission.C2D_MESSAGE" />
 
     <!-- This application has permission to register and receive data message. -->
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
@@ -33,8 +33,8 @@
 
     <!-- Permission to vibrate -->
     <uses-permission android:name="android.permission.VIBRATE" />
-    
-     <!-- Permission to read phone state used for obtaining device ID IMEI or MEID -->
+
+    <!-- Permission to read phone state used for obtaining device ID IMEI or MEID -->
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <!-- Main activity. -->
@@ -42,56 +42,55 @@
         android:allowBackup="true"
         android:icon="@drawable/snowball_launcher_72px"
         android:label="@string/app_name" >
+
         <!-- Register Activity -->
         <activity
-            android:name=".RegisterActivity"
+            android:name="com.snowball.RegisterActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        
+
         <!-- Main Activity -->
         <activity
-            android:name="com.messaging.push.MainActivity"
+            android:name="com.snowball.MainActivity"
             android:configChanges="orientation|keyboardHidden"
             android:label="@string/app_name" >
+        </activity>        
+        <activity
+            android:name="com.snowball.TaskListActivity"
+            android:label="@string/app_name" >
+        </activity>
+        <activity android:name="com.snowball.DetailActivity" >
+        </activity>
+        <activity android:name="com.snowball.PrefsActivity" >
         </activity>
         
-        <activity
-            android:name="com.messaging.push._backup.EventDatabaseActivity">
-        </activity>
-        
-        <activity
-            android:name="com.messaging.push.TaskListActivity"
-            android:label="@string/app_name" >            
-        </activity>
-        <activity
-            android:name="com.messaging.push.TaskDetailActivity"
-            >            
-        </activity>
-        
+
         <provider
-      android:name="com.messaging.push.contentprovider.MyTaskContentProvider"
-      android:authorities="com.messaging.push" >
-   </provider>
+            android:name="com.snowball.db.TaskContentProvider"
+            android:authorities="com.snowball"
+            android:exported="false" >
+        </provider>
 
         <receiver
             android:name="com.google.android.gcm.GCMBroadcastReceiver"
             android:permission="com.google.android.c2dm.permission.SEND" >
             <intent-filter>
- 
+
                 <!-- Receives the actual messages. -->
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
                 <!-- Receives the registration id. -->
                 <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
 
-                <category android:name="com.messaging.push" />
+                <category android:name="com.snowball" />
             </intent-filter>
         </receiver>
 
-        <service android:name="com.messaging.push.GCMIntentService" />
+        <service android:name="com.snowball.GCMIntentService" />
     </application>
 
 </manifest>
