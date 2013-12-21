@@ -7,44 +7,36 @@
     android:orientation="vertical" >
 
     <TextView
-        android:id="@+id/task_edit_department"
+        android:id="@+id/task_location"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/task_edit_department"
-        android:textAppearance="?android:attr/textAppearanceLarge" >
+        android:hint="@string/task_edit_summary"
+        android:textAppearance="?android:attr/textAppearanceMedium" >
     </TextView>
-
+    
     <TextView
-        android:id="@+id/task_edit_client"
+        android:id="@+id/task_client"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:hint="@string/task_edit_description"
         android:textAppearance="?android:attr/textAppearanceMedium" >
     </TextView>
 
-    <TextView
-        android:id="@+id/task_edit_location"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:hint="@string/task_edit_summary"
-        android:textAppearance="?android:attr/textAppearanceMedium" >
-    </TextView>
-
     <Button
-        android:id="@+id/task_edit_start_button"
+        android:id="@+id/task_start_button"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="@string/task_button_start" />
 
     <Button
-        android:id="@+id/task_edit_finish"
+        android:id="@+id/task_finish_button"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:enabled="false"
         android:text="@string/task_button_stop" />
 
     <Button
-        android:id="@+id/task_edit_pause"
+        android:id="@+id/task_pause_button"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:enabled="false"

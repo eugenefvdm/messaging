@@ -10,7 +10,9 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="4dp"
         android:layout_marginRight="8dp"        
-        android:src="@drawable/snowball_list_48px" >
+        android:src="@drawable/snowball_list_48px" 
+        android:contentDescription="@string/task_row_icon"
+        >
     </ImageView>
 
     <TextView
@@ -19,7 +21,7 @@
         android:layout_height="wrap_content"
         android:layout_toRightOf="@id/icon"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Site Survey"          
+        android:text="@string/task_row_department"          
         >
     </TextView>
     
@@ -29,18 +31,29 @@
         android:layout_height="wrap_content"        
         android:layout_alignParentRight="true"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="14 Mar"         
+        android:text="@string/task_row_start"         
         >
     </TextView>
     
     <TextView
-        android:id="@+id/address"
+        android:id="@+id/city"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_toRightOf="@id/icon"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:layout_below="@id/department"                                
-        android:text="Address"         
+        android:text="@string/task_row_city"         
+        >
+    </TextView>
+    
+    <TextView
+        android:id="@+id/client_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/icon"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:layout_below="@id/city"                                
+        android:text="@string/task_row_client_name"         
         >
     </TextView>
 

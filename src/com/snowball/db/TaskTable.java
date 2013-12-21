@@ -10,7 +10,9 @@ public class TaskTable {
 	public static final String COLUMN_ID = "_id";
 	public static final String COLUMN_TICKET_ID = "ticket_id";
 	public static final String COLUMN_DEPARTMENT = "department";
-	public static final String COLUMN_CLIENT = "client";
+	public static final String COLUMN_COMPANYNAME = "companyname";
+	public static final String COLUMN_PHONENUMBER = "phonenumber";
+	public static final String COLUMN_CLIENT_NAME = "client_name";	
 	public static final String COLUMN_ADDRESS1 = "address1";
 	public static final String COLUMN_ADDRESS2 = "address2";
 	public static final String COLUMN_CITY = "city";
@@ -25,7 +27,9 @@ public class TaskTable {
 			+ COLUMN_ID + " integer primary key autoincrement, "
 			+ COLUMN_TICKET_ID + " integer, "
 			+ COLUMN_DEPARTMENT + " text not null, "
-			+ COLUMN_CLIENT + " text not null,"
+			+ COLUMN_COMPANYNAME + " text, "
+			+ COLUMN_PHONENUMBER + " text not null, "
+			+ COLUMN_CLIENT_NAME + " text not null,"
 			+ COLUMN_ADDRESS1 + " text not null,"
 			+ COLUMN_ADDRESS2 + " text not null,"
 			+ COLUMN_CITY + " text not null,"

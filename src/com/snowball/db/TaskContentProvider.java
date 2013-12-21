@@ -1,11 +1,8 @@
 package com.snowball.db;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Iterator;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 
 import android.content.ContentProvider;
 import android.content.ContentResolver;
@@ -69,7 +66,7 @@ public class TaskContentProvider extends ContentProvider {
 		SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
 
 		// check if the caller has requested a column which does not exists
-		checkColumns(projection);
+		////checkColumns(projection);
 
 		// Set the table
 		queryBuilder.setTables(TaskTable.TABLE_TASK);
@@ -83,7 +80,7 @@ public class TaskContentProvider extends ContentProvider {
 			queryBuilder.appendWhere(TaskTable.COLUMN_ID + "=" + uri.getLastPathSegment());
 			break;
 		case TASK_TICKET_ID:
-			// adding the ID to the original query
+			// adding the ticket_id to the original query
 			queryBuilder.appendWhere(TaskTable.COLUMN_TICKET_ID + "=" + uri.getLastPathSegment());
 			break;	
 		default:
@@ -186,22 +183,23 @@ public class TaskContentProvider extends ContentProvider {
 		return rowsUpdated;
 	}
 
-	private void checkColumns(String[] projection) {
-		String[] available = {
-				TaskTable.COLUMN_TICKET_ID, TaskTable.COLUMN_DEPARTMENT,
-				TaskTable.COLUMN_CLIENT, TaskTable.COLUMN_ADDRESS1,
-				TaskTable.COLUMN_ADDRESS2, TaskTable.COLUMN_CITY,
-				TaskTable.COLUMN_ID, TaskTable.COLUMN_START,
-				TaskTable.COLUMN_START_ACTUAL, TaskTable.COLUMN_STOP, TaskTable.COLUMN_STOP_ACTUAL };		
-		if (projection != null) {
-			HashSet<String> requestedColumns = new HashSet<String>(Arrays.asList(projection));
-			HashSet<String> availableColumns = new HashSet<String>(Arrays.asList(available));
-			// check if all columns which are requested are available
-			if (!availableColumns.containsAll(requestedColumns)) {
-				throw new IllegalArgumentException("Unknown columns in projection");
-			}
-		}
-	}
+//	private void checkColumns(String[] projection) {
+//		String[] available = {
+//				TaskTable.COLUMN_TICKET_ID, TaskTable.COLUMN_DEPARTMENT,
+//				TaskTable.COLUMN_CLIENT_NAME, TaskTable.COLUMN_COMPANYNAME,
+//				TaskTable.COLUMN_PHONENUMBER, TaskTable.COLUMN_ADDRESS1,
+//				TaskTable.COLUMN_ADDRESS2, TaskTable.COLUMN_CITY,
+//				TaskTable.COLUMN_ID, TaskTable.COLUMN_START,
+//				TaskTable.COLUMN_START_ACTUAL, TaskTable.COLUMN_STOP, TaskTable.COLUMN_STOP_ACTUAL };		
+//		if (projection != null) {
+//			HashSet<String> requestedColumns = new HashSet<String>(Arrays.asList(projection));
+//			HashSet<String> availableColumns = new HashSet<String>(Arrays.asList(available));
+//			// check if all columns which are requested are available
+//			if (!availableColumns.containsAll(requestedColumns)) {
+//				throw new IllegalArgumentException("Unknown columns in projection");
+//			}
+//		}
+//	}
 
 	/**
 	 * Determine action by evaluating JSON from message
@@ -231,7 +229,9 @@ public class TaskContentProvider extends ContentProvider {
 
 		int ticket_id = 0;
 		String department = null;
-		String client = null;
+		String client_name = null;
+		String companyname = null;
+		String phonenumber = null;
 		String address1 = null;
 		String address2 = null;
 		String city = null;
@@ -242,7 +242,9 @@ public class TaskContentProvider extends ContentProvider {
 			JSONObject payload = jObject.getJSONObject(action);
 			ticket_id = payload.getInt("ticket_id");
 			department = payload.getString("department");
-			client = payload.getString("client");
+			client_name = payload.getString("client_name");
+			companyname = payload.getString("companyname");
+			phonenumber = payload.getString("phonenumber");
 			address1 = payload.getString("address1");
 			address2 = payload.getString("address2");
 			city = payload.getString("city");
@@ -255,7 +257,9 @@ public class TaskContentProvider extends ContentProvider {
 		ContentValues values = new ContentValues();
 		values.put(TaskTable.COLUMN_TICKET_ID, ticket_id);
 		values.put(TaskTable.COLUMN_DEPARTMENT, department);
-		values.put(TaskTable.COLUMN_CLIENT, client);
+		values.put(TaskTable.COLUMN_CLIENT_NAME, client_name);
+		values.put(TaskTable.COLUMN_COMPANYNAME, companyname);
+		values.put(TaskTable.COLUMN_PHONENUMBER, phonenumber);
 		values.put(TaskTable.COLUMN_ADDRESS1, address1);
 		values.put(TaskTable.COLUMN_ADDRESS2, address2);
 		values.put(TaskTable.COLUMN_CITY, city);

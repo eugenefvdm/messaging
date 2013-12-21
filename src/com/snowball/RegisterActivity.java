@@ -1,26 +1,28 @@
 package com.snowball;
 
-import static com.snowball.CommonUtilities.SENDER_ID;
-import static com.snowball.CommonUtilities.SERVER_URL;
-
 import java.util.regex.Pattern;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.snowball.R;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.util.Patterns;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
 public class RegisterActivity extends Activity {
+	private static final String TAG = "RegisterActivity";
+
 	// alert dialog manager
 	AlertDialogManager alert = new AlertDialogManager();
 
@@ -53,6 +55,8 @@ public class RegisterActivity extends Activity {
 			return;
 		}
 		
+		//checkGooglePlayServicesAvailability();
+		
 		SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 		String deviceName = sharedPrefs.getString("pref_key_device_name", null);
 		String serverURL = sharedPrefs.getString("pref_key_server_url", null);
@@ -73,8 +77,7 @@ public class RegisterActivity extends Activity {
 			Intent i = new Intent(getApplicationContext(), MainActivity.class);
 			i.putExtra("name", deviceName);
 			i.putExtra("email", email);
-			startActivity(i);
-			finish();
+			startActivity(i);			
 			return;
 		}
 	}
@@ -143,6 +146,39 @@ public class RegisterActivity extends Activity {
 //			}
 //		});
 //	}
+	
+	public void checkGooglePlayServicesAvailability()
+	{
+		int RQS_GooglePlayServices = 1;
+		Log.d(TAG, "Checking for play services");
+	    int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
+	    Log.d(TAG, "Result: " + Integer.valueOf(resultCode));
+	    if(resultCode == ConnectionResult.SERVICE_MISSING || resultCode == ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED || resultCode == ConnectionResult.SERVICE_DISABLED)
+	    {
+	    	Log.d(TAG, "Calling up dialog: " + Integer.valueOf(resultCode));
+	    	GooglePlayServicesUtil.getErrorDialog(resultCode, this, RQS_GooglePlayServices).show();
+//	        Dialog dialog = GooglePlayServicesUtil.getErrorDialog(resultCode, this, 69);
+//	        if(dialog != null)
+//	        {
+//	            dialog.show();                
+//	        }
+//	        else
+//	        {
+//	            showOkDialogWithText(this, "Something went wrong. Please make sure that you have the Play Store installed and that you are connected to the internet. Contact developer with details if this persists.");
+//	        }
+	    }
+
+	    //Log.d("GooglePlayServicesUtil Check", "Result is: " + resultCode);
+	}
+
+	public static void showOkDialogWithText(Context context, String messageText)
+	{
+	    new AlertDialog.Builder(context)
+	    .setMessage(messageText)
+	    .setCancelable(true)
+	    .setPositiveButton("OK", null)
+	    .show();
+	}
 		
 	private String getDeviceAccounts() {
 		Pattern emailPattern = Patterns.EMAIL_ADDRESS; // API level 8+
