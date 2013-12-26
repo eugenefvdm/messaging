@@ -8,5 +8,5 @@
 package com.snowball;
 
 public interface AsyncResponse {
-	void processFinish(String output);
+	void asyncProcessFinish(String output);
 }

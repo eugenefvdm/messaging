@@ -1,5 +1,7 @@
 package com.snowball.db;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -18,11 +20,12 @@ import android.util.Log;
 /**
  * Content Provider for Tasks
  * 
- * In order to get ticket_ids updated instead of _id, I added TASK_TICKET_ID and CONTENT_ITEM_TICKET everywhere
- * At present update is only called from GCM intent
+ * In order to get ticket_ids updated instead of _id, I added TASK_TICKET_ID and
+ * CONTENT_ITEM_TICKET everywhere At present update is only called from GCM
+ * intent
  * 
  * @author eugene
- *
+ * 
  */
 public class TaskContentProvider extends ContentProvider {
 
@@ -34,7 +37,7 @@ public class TaskContentProvider extends ContentProvider {
 	// used for the UriMacher
 	private static final int TASKS = 10;
 	private static final int TASK_ID = 20;
-	private static final int TASK_TICKET_ID = 30;
+	private static final int TASK_CALENDAR_ID = 30;
 
 	private static final String AUTHORITY = "com.snowball";
 
@@ -49,7 +52,7 @@ public class TaskContentProvider extends ContentProvider {
 	static {
 		sURIMatcher.addURI(AUTHORITY, BASE_PATH, TASKS);
 		sURIMatcher.addURI(AUTHORITY, BASE_PATH + "/#", TASK_ID);
-		sURIMatcher.addURI(AUTHORITY, BASE_PATH + "/ticket" + "/#", TASK_TICKET_ID);
+		sURIMatcher.addURI(AUTHORITY, BASE_PATH + "/ticket" + "/#", TASK_CALENDAR_ID);
 	}
 
 	@Override
@@ -66,7 +69,7 @@ public class TaskContentProvider extends ContentProvider {
 		SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
 
 		// check if the caller has requested a column which does not exists
-		////checkColumns(projection);
+		checkColumns(projection);
 
 		// Set the table
 		queryBuilder.setTables(TaskTable.TABLE_TASK);
@@ -79,10 +82,10 @@ public class TaskContentProvider extends ContentProvider {
 			// adding the ID to the original query
 			queryBuilder.appendWhere(TaskTable.COLUMN_ID + "=" + uri.getLastPathSegment());
 			break;
-		case TASK_TICKET_ID:
+		case TASK_CALENDAR_ID:
 			// adding the ticket_id to the original query
 			queryBuilder.appendWhere(TaskTable.COLUMN_TICKET_ID + "=" + uri.getLastPathSegment());
-			break;	
+			break;
 		default:
 			throw new IllegalArgumentException("Unknown URI: " + uri);
 		}
@@ -134,12 +137,12 @@ public class TaskContentProvider extends ContentProvider {
 				rowsDeleted = sqlDB.delete(TaskTable.TABLE_TASK, TaskTable.COLUMN_ID + "=" + id + " and " + selection, selectionArgs);
 			}
 			break;
-		case TASK_TICKET_ID:
-			String ticket_id = uri.getLastPathSegment();
+		case TASK_CALENDAR_ID:
+			String calendar_id = uri.getLastPathSegment();
 			if (TextUtils.isEmpty(selection)) {
-				rowsDeleted = sqlDB.delete(TaskTable.TABLE_TASK, TaskTable.COLUMN_TICKET_ID + "=" + ticket_id, null);
+				rowsDeleted = sqlDB.delete(TaskTable.TABLE_TASK, TaskTable.COLUMN_CALENDAR_ID + "=" + calendar_id, null);
 			} else {
-				rowsDeleted = sqlDB.delete(TaskTable.TABLE_TASK, TaskTable.COLUMN_TICKET_ID + "=" + ticket_id + " and " + selection, selectionArgs);
+				rowsDeleted = sqlDB.delete(TaskTable.TABLE_TASK, TaskTable.COLUMN_CALENDAR_ID + "=" + calendar_id + " and " + selection, selectionArgs);
 			}
 			break;
 		default:
@@ -168,12 +171,12 @@ public class TaskContentProvider extends ContentProvider {
 				rowsUpdated = sqlDB.update(TaskTable.TABLE_TASK, values, TaskTable.COLUMN_ID + "=" + id + " and " + selection, selectionArgs);
 			}
 			break;
-		case TASK_TICKET_ID:
-			String ticket_id = uri.getLastPathSegment();
+		case TASK_CALENDAR_ID:
+			String calendar_id = uri.getLastPathSegment();
 			if (TextUtils.isEmpty(selection)) {
-				rowsUpdated = sqlDB.update(TaskTable.TABLE_TASK, values, TaskTable.COLUMN_TICKET_ID + "=" + ticket_id, null);
+				rowsUpdated = sqlDB.update(TaskTable.TABLE_TASK, values, TaskTable.COLUMN_CALENDAR_ID + "=" + calendar_id, null);
 			} else {
-				rowsUpdated = sqlDB.update(TaskTable.TABLE_TASK, values, TaskTable.COLUMN_TICKET_ID + "=" + ticket_id + " and " + selection, selectionArgs);
+				rowsUpdated = sqlDB.update(TaskTable.TABLE_TASK, values, TaskTable.COLUMN_CALENDAR_ID + "=" + calendar_id + " and " + selection, selectionArgs);
 			}
 			break;
 		default:
@@ -183,23 +186,25 @@ public class TaskContentProvider extends ContentProvider {
 		return rowsUpdated;
 	}
 
-//	private void checkColumns(String[] projection) {
-//		String[] available = {
-//				TaskTable.COLUMN_TICKET_ID, TaskTable.COLUMN_DEPARTMENT,
-//				TaskTable.COLUMN_CLIENT_NAME, TaskTable.COLUMN_COMPANYNAME,
-//				TaskTable.COLUMN_PHONENUMBER, TaskTable.COLUMN_ADDRESS1,
-//				TaskTable.COLUMN_ADDRESS2, TaskTable.COLUMN_CITY,
-//				TaskTable.COLUMN_ID, TaskTable.COLUMN_START,
-//				TaskTable.COLUMN_START_ACTUAL, TaskTable.COLUMN_STOP, TaskTable.COLUMN_STOP_ACTUAL };		
-//		if (projection != null) {
-//			HashSet<String> requestedColumns = new HashSet<String>(Arrays.asList(projection));
-//			HashSet<String> availableColumns = new HashSet<String>(Arrays.asList(available));
-//			// check if all columns which are requested are available
-//			if (!availableColumns.containsAll(requestedColumns)) {
-//				throw new IllegalArgumentException("Unknown columns in projection");
-//			}
-//		}
-//	}
+	private void checkColumns(String[] projection) {
+		String[] available = {
+				TaskTable.COLUMN_USERID,
+				TaskTable.COLUMN_CALENDAR_ID, TaskTable.COLUMN_TICKET_ID,
+				TaskTable.COLUMN_DEPARTMENT, TaskTable.COLUMN_CLIENT_NAME,
+				TaskTable.COLUMN_COMPANYNAME, TaskTable.COLUMN_PHONENUMBER,
+				TaskTable.COLUMN_ADDRESS1, TaskTable.COLUMN_ADDRESS2,
+				TaskTable.COLUMN_CITY, TaskTable.COLUMN_ID,
+				TaskTable.COLUMN_START, TaskTable.COLUMN_START_ACTUAL,
+				TaskTable.COLUMN_END, TaskTable.COLUMN_END_ACTUAL, TaskTable.COLUMN_STATUS };
+		if (projection != null) {
+			HashSet<String> requestedColumns = new HashSet<String>(Arrays.asList(projection));
+			HashSet<String> availableColumns = new HashSet<String>(Arrays.asList(available));
+			// check if all columns which are requested are available
+			if (!availableColumns.containsAll(requestedColumns)) {
+				throw new IllegalArgumentException("Unknown columns in projection");
+			}
+		}
+	}
 
 	/**
 	 * Determine action by evaluating JSON from message
@@ -224,9 +229,11 @@ public class TaskContentProvider extends ContentProvider {
 		return action;
 	}
 
-	public static ContentValues convertMessageToContentValues(String action, String message) {
+	public static ContentValues convertMessageToContentValues(String action,
+			String message) {
 		JSONObject jObject = null;
-
+		int userid = 0;
+		int calendar_id = 0;
 		int ticket_id = 0;
 		String department = null;
 		String client_name = null;
@@ -236,25 +243,30 @@ public class TaskContentProvider extends ContentProvider {
 		String address2 = null;
 		String city = null;
 		int start = 0;
-
 		try {
 			jObject = new JSONObject(message);
 			JSONObject payload = jObject.getJSONObject(action);
-			ticket_id = payload.getInt("ticket_id");
-			department = payload.getString("department");
-			client_name = payload.getString("client_name");
-			companyname = payload.getString("companyname");
-			phonenumber = payload.getString("phonenumber");
-			address1 = payload.getString("address1");
-			address2 = payload.getString("address2");
-			city = payload.getString("city");
-			start = payload.getInt("start");
+			calendar_id = payload.getInt("calendar_id");
+			if (action.equals("insert") || action.equals("update")) {
+				userid = payload.getInt("userid");			
+				ticket_id = payload.getInt("ticket_id");
+				department = payload.getString("department");
+				client_name = payload.getString("client_name");
+				companyname = payload.getString("companyname");
+				phonenumber = payload.getString("phonenumber");
+				address1 = payload.getString("address1");
+				address2 = payload.getString("address2");
+				city = payload.getString("city");
+				start = payload.getInt("start");	
+			}			
 		} catch (JSONException e) {
 			Log.e(TAG, "Error parsing JSON");
 			e.printStackTrace();
 		}
 
 		ContentValues values = new ContentValues();
+		values.put(TaskTable.COLUMN_USERID, userid);
+		values.put(TaskTable.COLUMN_CALENDAR_ID, calendar_id);
 		values.put(TaskTable.COLUMN_TICKET_ID, ticket_id);
 		values.put(TaskTable.COLUMN_DEPARTMENT, department);
 		values.put(TaskTable.COLUMN_CLIENT_NAME, client_name);

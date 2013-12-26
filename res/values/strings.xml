@@ -33,7 +33,7 @@
     
     <string name="pref_server_url_summary">Enter the server URL</string>
     <string name="pref_server_url_title">Server URL</string>
-    <string name="pref_server_url_default">http://www.example.com/whmcs/messaging</string>
+    <string name="pref_server_url_default">http://196.201.6.235/whmcs</string>
     
     <string name="pref_device_name_summary">Enter your device ame</string>
     <string name="pref_device_name_title">Device name</string>

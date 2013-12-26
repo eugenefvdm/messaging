@@ -1,8 +1,7 @@
 package com.snowball;
 
-import static com.snowball.CommonUtilities.SERVER_UNREGISTER_URL;
-import static com.snowball.CommonUtilities.SERVER_URL;
-import static com.snowball.CommonUtilities.TAG;
+import static com.snowball.CommonUtilities.SERVER_ACTION_URL;
+import static com.snowball.CommonUtilities.SERVER_REGISTER_URL;
 import static com.snowball.CommonUtilities.displayMessage;
 
 import java.io.IOException;
@@ -27,6 +26,7 @@ public final class ServerUtilities {
 	private static final int MAX_ATTEMPTS = 5;
 	private static final int BACKOFF_MILLI_SECONDS = 2000;
 	private static final Random random = new Random();
+	private static final String TAG = "ServerUtilities";
 
 	/**
 	 * Register this account/device pair within the server.
@@ -35,7 +35,7 @@ public final class ServerUtilities {
 	static void register(final Context context, String name, String email,
 			final String regId) {
 		Log.i(TAG, "registering device (regId = " + regId + ")");
-		String serverUrl = SERVER_URL;
+		String serverUrl = SERVER_REGISTER_URL;
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("regId", regId);
 		params.put("name", name);
@@ -84,13 +84,38 @@ public final class ServerUtilities {
 		CommonUtilities.displayMessage(context, message);
 	}
 
+//	/**
+//	 * Update ticket time on server based on start and end values
+//	 * 
+//	 * This should be combined with the existing server post routine
+//	 * 
+//	 */
+//	static void updateTimeOnServer(final Context context, String id, String start, String end) {
+//		String calendar_id = String.valueOf(id);
+//		String serverUrl = SERVER_ACTION_URL;
+//		Map<String, String> params = new HashMap<String, String>();
+//		params.put("action", "update");
+//		params.put("calendar_id", calendar_id);
+//		params.put("start", start);
+//		params.put("end", end);
+//		try {
+//			post(serverUrl, params);
+//		} catch (IOException e) {
+//			Log.e(TAG, "Unable to update ticket time on server");
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//	}
+
 	/**
 	 * Unregister this account/device pair within the server.
 	 */
 	static void unregister(final Context context, final String regId) {
 		Log.i(TAG, "Unregistering device (regId = " + regId + ")");
-		String serverUrl = SERVER_UNREGISTER_URL + "?action=unregister";
+		//String serverUrl = SERVER_ACTION_URL + "?action=unregister";
+		String serverUrl = SERVER_ACTION_URL;
 		Map<String, String> params = new HashMap<String, String>();
+		params.put("action", "unregister");		
 		params.put("regId", regId);
 		try {
 			post(serverUrl, params);

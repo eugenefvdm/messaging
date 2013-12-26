@@ -81,7 +81,7 @@
             android:name="com.snowball.TaskListActivity"
             android:label="@string/app_name" >
         </activity>
-        <activity android:name="com.snowball.DetailActivity" >
+        <activity android:name="com.snowball.JobDetailActivity" >
         </activity>
         <activity android:name="com.snowball.PrefsActivity" >
         </activity>        

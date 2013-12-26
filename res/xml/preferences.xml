@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+    
+    <PreferenceCategory
+        android:title="General"
+        android:key="first_category"
+     >  
+    
+    <EditTextPreference
+        android:key="pref_key_device_name"
+        android:summary="@string/pref_device_name_summary"
+        android:title="@string/pref_device_name_title"       
+    />
+
+    <EditTextPreference
+        android:key="pref_key_server_url"
+        android:summary="@string/pref_server_url_summary"
+        android:title="@string/pref_server_url_title"        
+    />
+    
+    </PreferenceCategory>
+
+</PreferenceScreen>

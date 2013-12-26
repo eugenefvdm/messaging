@@ -44,7 +44,7 @@ public class GCMIntentService extends GCMBaseIntentService {
         Log.i(TAG, "Device registered: regId = " + registrationId);
         displayMessage(context, "Your device registred with GCM");
         Log.d(TAG, "Device name: " + MainActivity.name);
-        ServerUtilities.register(context, MainActivity.name, MainActivity.email, registrationId);
+        ServerUtilities.register(context, MainActivity.name, CommonUtilities.getDeviceAccounts(context), registrationId);
     }
 
     /**
@@ -67,7 +67,7 @@ public class GCMIntentService extends GCMBaseIntentService {
         String message = intent.getExtras().getString("price");
         Log.i(TAG, "Received message '" + message + "' and now examining content...");
         String department = null;
-        int ticket_id = 0;
+        int calendar_id = 0;
 		// The AndroidHive demo return NULL first time you register so we handle it gracefully
         if (message == null) {
         	messageType = "First time registration! Welcome!";
@@ -81,15 +81,17 @@ public class GCMIntentService extends GCMBaseIntentService {
         			getContentResolver().insert(TaskContentProvider.CONTENT_URI, values);
         			messageType = "New " + department;
         		} else if (action.equals("update")) {
-        			ticket_id = values.getAsInteger("ticket_id");
-        			Uri todoUri = Uri.parse(TaskContentProvider.CONTENT_URI + "/ticket" + "/" + ticket_id);        			
+        			calendar_id = values.getAsInteger("calendar_id");
+        			Uri todoUri = Uri.parse(TaskContentProvider.CONTENT_URI + "/ticket" + "/" + calendar_id);        			
         			getContentResolver().update(todoUri, values, null, null);
         			messageType = "Updated " + department;
-        		} else if (action.equals("delete")) {
-        			ticket_id = values.getAsInteger("ticket_id");
-        			Uri todoUri = Uri.parse(TaskContentProvider.CONTENT_URI + "/ticket" + "/" + ticket_id);        			
+        		} else if (action.equals("delete")) {        			
+        			calendar_id = values.getAsInteger("calendar_id");
+        			Log.d(TAG, "Action delete being executed on calendar_id " + String.valueOf(calendar_id));
+        			Uri todoUri = Uri.parse(TaskContentProvider.CONTENT_URI + "/ticket" + "/" + calendar_id);        			
         			getContentResolver().delete(todoUri, null, null);
-        			messageType = "Deleted " + department;
+        			//messageType = "Deleted " + department;
+        			messageType = "Deleted item";
         		}
         	} else {
         		messageType = "System Message: " + message;

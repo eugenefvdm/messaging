@@ -1,6 +1,7 @@
 /*
- * TODO Some complexity replacing with FLAG_KEEP_SCREEN_ON and rather using WindowManager
- * e.g. getWindow().addFlags(LayoutParams.FLAG_KEEP_SCREEN_ON);
+ * TODO Difficulty replacing deprecated methods and problem with wakeLock.release never reached
+ *  The solution for fixing the deprecated method is to replace with FLAG_KEEP_SCREEN_ON and rather using WindowManager
+ *  e.g. getWindow().addFlags(LayoutParams.FLAG_KEEP_SCREEN_ON);
  */
 
 package com.snowball;

@@ -31,15 +31,13 @@
     <Button
         android:id="@+id/task_finish_button"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:enabled="false"
+        android:layout_height="wrap_content"        
         android:text="@string/task_button_stop" />
 
     <Button
         android:id="@+id/task_pause_button"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:enabled="false"
         android:text="@string/task_button_on_hold" />
 
     <TableLayout

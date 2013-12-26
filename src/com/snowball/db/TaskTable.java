@@ -8,6 +8,8 @@ public class TaskTable {
 	// Database table
 	public static final String TABLE_TASK = "task";
 	public static final String COLUMN_ID = "_id";
+	public static final String COLUMN_USERID = "userid";
+	public static final String COLUMN_CALENDAR_ID = "calendar_id";
 	public static final String COLUMN_TICKET_ID = "ticket_id";
 	public static final String COLUMN_DEPARTMENT = "department";
 	public static final String COLUMN_COMPANYNAME = "companyname";
@@ -17,15 +19,19 @@ public class TaskTable {
 	public static final String COLUMN_ADDRESS2 = "address2";
 	public static final String COLUMN_CITY = "city";
 	public static final String COLUMN_START = "start";
-	public static final String COLUMN_STOP = "stop";
+	public static final String COLUMN_END = "stop";
 	public static final String COLUMN_START_ACTUAL = "start_actual";
-	public static final String COLUMN_STOP_ACTUAL = "stop_actual";
+	public static final String COLUMN_END_ACTUAL = "stop_actual";
+	// Status can be outstanding / started / paused / completed / cancelled / in progress
+	public static final String COLUMN_STATUS = "status";
 
 	// Database creation SQL statement
 	private static final String DATABASE_CREATE = "create table " + TABLE_TASK
 			+ "(" 
 			+ COLUMN_ID + " integer primary key autoincrement, "
-			+ COLUMN_TICKET_ID + " integer, "
+			+ COLUMN_USERID + " integer not null, "
+			+ COLUMN_CALENDAR_ID + " integer not null, "
+			+ COLUMN_TICKET_ID + " integer not null, "
 			+ COLUMN_DEPARTMENT + " text not null, "
 			+ COLUMN_COMPANYNAME + " text, "
 			+ COLUMN_PHONENUMBER + " text not null, "
@@ -34,9 +40,10 @@ public class TaskTable {
 			+ COLUMN_ADDRESS2 + " text not null,"
 			+ COLUMN_CITY + " text not null,"
 			+ COLUMN_START + " int,"
-			+ COLUMN_STOP + " int,"
+			+ COLUMN_END + " int,"
 			+ COLUMN_START_ACTUAL + " int,"
-			+ COLUMN_STOP_ACTUAL + " int"
+			+ COLUMN_END_ACTUAL + " int,"
+			+ COLUMN_STATUS + " text default 'outstanding'"
 			+ ");";
 
 	public static void onCreate(SQLiteDatabase database) {
