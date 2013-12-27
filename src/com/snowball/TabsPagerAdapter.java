@@ -7,22 +7,20 @@ import android.support.v4.app.ListFragment;
 
 public class TabsPagerAdapter extends FragmentPagerAdapter {
 
-	private ListFragment mJobListFragment;
-
 	public TabsPagerAdapter(FragmentManager fm) {
 		super(fm);
 	}
 
 	@Override
 	public Fragment getItem(int index) {
-
+		final ListFragment jobListFragment;
 		switch (index) {
 		case 0:
-			mJobListFragment = JobListFragment.newInstance(index, "outstanding");
-			return mJobListFragment;
+			jobListFragment = JobListFragment.newInstance(index, "completed");
+			return jobListFragment;
 		case 1:
-			mJobListFragment = JobListFragment.newInstance(index, "completed");
-			return mJobListFragment;
+			jobListFragment = JobListFragment.newInstance(index, "outstanding");
+			return jobListFragment;
 		}
 
 		return null;

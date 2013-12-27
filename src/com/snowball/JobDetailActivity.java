@@ -1,8 +1,6 @@
 /*
  * DetailActivity.java
  * 
- * TODO ?avoid bad addresses by checking from sending application
- *  
  */
 
 package com.snowball;
@@ -52,15 +50,18 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 	private Button mBtnStart;
 	private Button mBtnEnd;
 	private Button mBtnPause;
-
-	private Uri todoUri;
+	
+	private Uri jobUri;
 
 	HTTPTask asyncTask;
 
 	AsyncTask<Void, Void, Void> mUpdateTask;
 
 	private Cursor cursor;
-	// These variables are passed to map activity
+
+	private String mCalendarId;
+
+	// Member variables that are passed to map activity
 	private String mDepartment, mClient, mLocationName;
 
 	String[] mProjection = {
@@ -90,120 +91,103 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 
 		Bundle extras = getIntent().getExtras();
 
-		// The taskUri can either come from a saved instance or it could have
-		// been passed from the list activity
 		if (bundle != null) {
 			// todoUri retrieved from saved instance
-			todoUri = (Uri) bundle.getParcelable(TaskContentProvider.CONTENT_ITEM_TYPE);
+			jobUri = (Uri) bundle.getParcelable(TaskContentProvider.CONTENT_ITEM_TYPE);
 		} else {
-			todoUri = extras.getParcelable(TaskContentProvider.CONTENT_ITEM_TYPE);
+			// todoUri passed from the list activity or the intent service
+			jobUri = extras.getParcelable(TaskContentProvider.CONTENT_ITEM_TYPE);
+			Log.d(TAG, "jobUri: " + jobUri);
 		}
-		fillData(todoUri);
+		
+		fillData(jobUri);
 
 		setTitle(mDepartment);
 
 		mBtnStart.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
-				// Update start time on GUI and database
-				long unixTimeNow = (System.currentTimeMillis()) / 1000L;
-				Date d = new Date(unixTimeNow * 1000);
-				mTxtStartText.setText(DateFormat.format("dd/MM hh:mm", d));
-				ContentValues values = new ContentValues();
-				values.put(TaskTable.COLUMN_START_ACTUAL, unixTimeNow);
-				values.put(TaskTable.COLUMN_STATUS, "started");
-				getContentResolver().update(todoUri, values, null, null);
-				// Get values from database for POST
-				cursor = getContentResolver().query(todoUri, mProjection, null, null, null);
-				cursor.moveToFirst();
-				final String userid = cursor.getString(cursor.getColumnIndexOrThrow(TaskTable.COLUMN_USERID));
-				final String calendar_id = cursor.getString(cursor.getColumnIndexOrThrow(TaskTable.COLUMN_CALENDAR_ID));
-				final String start = cursor.getString(cursor.getColumnIndexOrThrow(TaskTable.COLUMN_START_ACTUAL));
-				cursor.close();
-				// Prep POST
-				ArrayList<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(4);
-				if (mBtnStart.getText().equals("Start")) {
-					nameValuePairs.add(new BasicNameValuePair("action", "start"));
+				String action;
+				long now = (System.currentTimeMillis()) / 1000L;
+				final String startTime = String.valueOf(now);				
+				
+				if (mBtnStart.getText().equals("Start")) {					
+					Date d = new Date(now * 1000);
+					mTxtStartText.setText(DateFormat.format("dd/MM hh:mm", d));
+					ContentValues values = new ContentValues();					
+					values.put(TaskTable.COLUMN_STATUS, "started");
+					values.put(TaskTable.COLUMN_START_ACTUAL, startTime);
+					getContentResolver().update(jobUri, values, null, null);
+					action = "start";
 				} else {
-					nameValuePairs.add(new BasicNameValuePair("action", "restart"));	
-				}				
-				nameValuePairs.add(new BasicNameValuePair("userid", userid));
-				nameValuePairs.add(new BasicNameValuePair("calendar_id", calendar_id));
-				nameValuePairs.add(new BasicNameValuePair("start", start));
-				doAsyncTask(nameValuePairs);
-				setButtonStatus("started");
-				// mBtnPause.setEnabled(true);
-				// mBtnEnd.setEnabled(true);
-				// mBtnStart.setEnabled(false);
+					action = "resume";
+				}
+				serverAction(action, startTime);				
+				updateButtons("started");
+			}
+		});
+		
+		mBtnPause.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {				
+				long now = (System.currentTimeMillis()) / 1000L;
+				final String endTime = String.valueOf(now);
+
+				ContentValues values = new ContentValues();				
+				values.put(TaskTable.COLUMN_STATUS, "paused");
+				getContentResolver().update(jobUri, values, null, null);
+				
+				serverAction("pause", endTime);
+				updateButtons("paused");
 			}
 		});
 
 		mBtnEnd.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
-				long unixTimeNow = (System.currentTimeMillis()) / 1000L;
-				Date d = new Date(unixTimeNow * 1000);
-				mTxtStopText.setText(DateFormat.format("dd/MM hh:mm", d));
+				long now = (System.currentTimeMillis()) / 1000L;
+				final String endTime = String.valueOf(now);
+				
+				Date d = new Date(now * 1000);
+				mTxtStopText.setText(DateFormat.format("dd/MM hh:mm", d));				
 				ContentValues values = new ContentValues();
-				values.put(TaskTable.COLUMN_END_ACTUAL, unixTimeNow);
+				values.put(TaskTable.COLUMN_END_ACTUAL, now);
 				values.put(TaskTable.COLUMN_STATUS, "completed");
-				getContentResolver().update(todoUri, values, null, null);
-				// Get values from database for POST
-				cursor = getContentResolver().query(todoUri, mProjection, null, null, null);
-				cursor.moveToFirst();
-				final String userid = cursor.getString(cursor.getColumnIndexOrThrow(TaskTable.COLUMN_USERID));
-				final String calendar_id = cursor.getString(cursor.getColumnIndexOrThrow(TaskTable.COLUMN_CALENDAR_ID));
-				cursor.close();
-				// Prep POST
-				ArrayList<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(4);
-				nameValuePairs.add(new BasicNameValuePair("action", "end"));
-				final String end = String.valueOf(unixTimeNow);
-				nameValuePairs.add(new BasicNameValuePair("userid", userid));
-				nameValuePairs.add(new BasicNameValuePair("calendar_id", calendar_id));
-				nameValuePairs.add(new BasicNameValuePair("end", end));
-				doAsyncTask(nameValuePairs);
-				setButtonStatus("completed");
-				// mBtnPause.setEnabled(false);
-				// mBtnEnd.setEnabled(false);
+				getContentResolver().update(jobUri, values, null, null);
+				
+				serverAction("end", endTime);
+				updateButtons("completed");
 			}
 		});
-
-		mBtnPause.setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				// Get current time
-				long unixTime = (System.currentTimeMillis()) / 1000L;
-				final String end = String.valueOf(unixTime);
-
-				ContentValues values = new ContentValues();
-				values.put(TaskTable.COLUMN_START_ACTUAL, unixTime);
-				values.put(TaskTable.COLUMN_STATUS, "paused");
-				getContentResolver().update(todoUri, values, null, null);
-
-				cursor = getContentResolver().query(todoUri, mProjection, null, null, null);
-				cursor.moveToFirst();
-				final String userid = cursor.getString(cursor.getColumnIndexOrThrow(TaskTable.COLUMN_USERID));
-				final String calendar_id = cursor.getString(cursor.getColumnIndexOrThrow(TaskTable.COLUMN_CALENDAR_ID));
-				// final String start =
-				// cursor.getString(cursor.getColumnIndexOrThrow(TaskTable.COLUMN_START_ACTUAL));
-				cursor.close();
-				ArrayList<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(5);
-				nameValuePairs.add(new BasicNameValuePair("action", "pause"));
-				nameValuePairs.add(new BasicNameValuePair("userid", userid));
-				nameValuePairs.add(new BasicNameValuePair("calendar_id", calendar_id));
-				nameValuePairs.add(new BasicNameValuePair("end", end));
-				doAsyncTask(nameValuePairs);
-				setButtonStatus("paused");
-				// mBtnStart.setText("Restart");
-				// mBtnStart.setEnabled(true);
-				// mBtnPause.setEnabled(false);
-				// mBtnEnd.setEnabled(false);
-			}
-		});
-
+		
+	}
+	
+	private void updateButtons(String status) {
+		if (status.equals("outstanding")) {
+			mBtnStart.setEnabled(true);
+			mBtnPause.setEnabled(false);
+			mBtnEnd.setEnabled(false);
+		} else if (status.equals("started")) {
+			mBtnStart.setEnabled(false);
+			mBtnPause.setEnabled(true);
+			mBtnEnd.setEnabled(true);
+		} else if (status.equals("paused")) {
+			mBtnStart.setText("Resume");
+			mBtnStart.setEnabled(true);
+			mBtnPause.setEnabled(false);
+			mBtnEnd.setEnabled(false);
+		} else if (status.equals("completed")) {
+			mBtnStart.setEnabled(false);
+			mBtnPause.setEnabled(false);
+			mBtnEnd.setEnabled(false);
+		}
+	}
+	
+	private void serverAction(String action, String value) {
+		ArrayList<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(3);
+		nameValuePairs.add(new BasicNameValuePair("calendar_id", mCalendarId));
+		nameValuePairs.add(new BasicNameValuePair("action", action));		
+		nameValuePairs.add(new BasicNameValuePair("value", value));
+		doAsyncTask(nameValuePairs);
 	}
 
-	// Added to avoid
-	// "Type safety: A generic array of Map<String,String> is created for a varargs parameter"
-	// See
-	// http://stackoverflow.com/questions/1445233/is-it-possible-to-solve-the-a-generic-array-of-t-is-created-for-a-varargs-param
 	@SuppressWarnings("unchecked")
 	private void doAsyncTask(ArrayList<NameValuePair> nameValuePairs) {
 		asyncTask = new HTTPTask();
@@ -214,7 +198,7 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
-		inflater.inflate(R.menu.list_menu, menu);
+		inflater.inflate(R.menu.job_detail_menu, menu);
 		return true;
 	}
 
@@ -257,6 +241,7 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 		cursor = getContentResolver().query(uri, mProjection, null, null, null);
 		if (cursor != null) {
 			cursor.moveToFirst();
+			mCalendarId = cursor.getString(cursor.getColumnIndexOrThrow(TaskTable.COLUMN_CALENDAR_ID));
 			mDepartment = cursor.getString(cursor.getColumnIndexOrThrow(TaskTable.COLUMN_DEPARTMENT));
 			mClient = cursor.getString(cursor.getColumnIndexOrThrow(TaskTable.COLUMN_CLIENT_NAME));
 			String address1 = cursor.getString(cursor.getColumnIndexOrThrow(TaskTable.COLUMN_ADDRESS1));
@@ -264,11 +249,10 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 			String city = cursor.getString(cursor.getColumnIndexOrThrow(TaskTable.COLUMN_CITY));
 			mLocationName = address1 + ", " + address2 + ", " + city;
 			String status = cursor.getString(cursor.getColumnIndexOrThrow(TaskTable.COLUMN_STATUS));
-			setButtonStatus(status);
+			updateButtons(status);
 			mTxtLocationText.setText(mLocationName);
 			mTxtClientText.setText(mClient);
-			// Obtain Unix time from stored database field and work out real
-			// date
+			// Obtain Unix time from stored database field and display real date
 			long unixTime = cursor.getLong(cursor.getColumnIndexOrThrow(TaskTable.COLUMN_START_ACTUAL));
 			Date d = new Date(unixTime * 1000);
 			mTxtStartText.setText(DateFormat.format("dd/MM hh:mm", d));
@@ -276,31 +260,10 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 		}
 	}
 
-	private void setButtonStatus(String status) {
-		if (status.equals("outstanding")) {
-			mBtnStart.setEnabled(true);
-			mBtnPause.setEnabled(false);
-			mBtnEnd.setEnabled(false);
-		} else if (status.equals("started")) {
-			mBtnStart.setEnabled(false);
-			mBtnPause.setEnabled(true);
-			mBtnEnd.setEnabled(true);
-		} else if (status.equals("paused")) {
-			mBtnStart.setText("Restart");
-			mBtnStart.setEnabled(true);
-			mBtnPause.setEnabled(false);
-			mBtnEnd.setEnabled(false);
-		} else if (status.equals("completed")) {
-			mBtnStart.setEnabled(false);
-			mBtnPause.setEnabled(false);
-			mBtnEnd.setEnabled(false);
-		}
-	}
-
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 		// saveState();
-		outState.putParcelable(TaskContentProvider.CONTENT_ITEM_TYPE, todoUri);
+		outState.putParcelable(TaskContentProvider.CONTENT_ITEM_TYPE, jobUri);
 	}
 
 	@Override
@@ -308,26 +271,6 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 		super.onPause();
 		// saveState();
 	}
-
-	// private void saveState() {
-	//
-	// String summary = mTxtLocationText.getText().toString();
-	// String description = mTxtClientText.getText().toString();
-	//
-	// ContentValues values = new ContentValues();
-	//
-	// values.put(TaskTable.COLUMN_CLIENT, summary);
-	// values.put(TaskTable.COLUMN_CITY, description);
-	//
-	// if (todoUri == null) {
-	// // New task
-	// todoUri = getContentResolver().insert(TaskContentProvider.CONTENT_URI,
-	// values);
-	// } else {
-	// // Update task
-	// getContentResolver().update(todoUri, values, null, null);
-	// }
-	// }
 
 	@Override
 	public void asyncProcessFinish(String output) {

@@ -62,13 +62,8 @@
 
         <!-- Register Activity -->
         <activity
-            android:name="com.snowball.RegisterActivity"
-            android:label="@string/app_name" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+            android:name="com.snowball._backup.RegisterActivity"
+            android:label="@string/app_name" >            
         </activity>
 
         <!-- Main Activity -->
@@ -76,6 +71,10 @@
             android:name="com.snowball.MainActivity"
             android:configChanges="orientation|keyboardHidden"
             android:label="@string/app_name" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
         <activity
             android:name="com.snowball.TaskListActivity"

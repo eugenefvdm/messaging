@@ -1,4 +1,4 @@
-package com.snowball;
+package com.snowball._backup;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -9,6 +9,9 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+
+import com.snowball.AsyncResponse;
+
 import android.os.AsyncTask;
 
 public class HTTPTaskOld extends AsyncTask<String, Void, String> {

@@ -4,6 +4,8 @@ import static com.snowball.CommonUtilities.DISPLAY_MESSAGE_ACTION;
 import static com.snowball.CommonUtilities.EXTRA_MESSAGE;
 import static com.snowball.CommonUtilities.SENDER_ID;
 
+import java.lang.reflect.Field;
+
 import android.app.ActionBar;
 import android.app.FragmentTransaction;
 import android.app.ActionBar.Tab;
@@ -15,6 +17,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
@@ -22,6 +25,7 @@ import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.ViewConfiguration;
 import android.widget.Toast;
 
 import com.google.android.gcm.GCMRegistrar;
@@ -39,16 +43,12 @@ public class MainActivity extends FragmentActivity implements
 	private String[] tabs = { "Outstanding" , "Completed" };
 	
 	AsyncTask<Void, Void, Void> mRegisterTask;
-	
-	public static String name;
-	//public static String email;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-
-		// Initialization
+		
 		viewPager = (ViewPager) findViewById(R.id.pager);
 		actionBar = getActionBar();
 		mAdapter = new TabsPagerAdapter(getSupportFragmentManager());
@@ -57,26 +57,21 @@ public class MainActivity extends FragmentActivity implements
 		actionBar.setHomeButtonEnabled(false);
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);		
 
-		// Adding Tabs
+		// Add Tabs
 		for (String tab_name : tabs) {
 			actionBar.addTab(actionBar.newTab().setText(tab_name)
 					.setTabListener(this));
 		}
 		
-		// Init prefs
+		// Initialize preferences
 		PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 		
-		// GCM stuff
-
-		// Getting name, email from intent
-		Intent i = getIntent();
-
-		name = i.getStringExtra("name");
-		//email = i.getStringExtra("email");
-
-		// Make sure the device has the proper dependencies.
+		setTitle("Snowball Job List");
+				
+		// Make sure the device has the proper dependencies
+		Log.i(TAG, "Checking if device has proper dependencies...");
 		GCMRegistrar.checkDevice(this);
-
+		Log.i(TAG, "...finished checking if device has proper dependencies");
 		// Make sure the manifest was properly set - uncomment when ready
 		// http://developer.android.com/reference/com/google/android/gcm/GCMRegistrar.html#checkManifest(android.content.Context)
 		// GCMRegistrar.checkManifest(this);
@@ -84,42 +79,52 @@ public class MainActivity extends FragmentActivity implements
 		registerReceiver(mHandleMessageReceiver, new IntentFilter(DISPLAY_MESSAGE_ACTION));
 
 		// Get GCM registration id
+		Log.i(TAG, "GCMRegistrar.getRegistrationId");
 		final String regId = GCMRegistrar.getRegistrationId(this);
 
-		// Check if registration id already presents
+		// Check if a registration ID is already present
 		if (regId.equals("")) {
-			// Registration is not present, register now with GCM
+			// Registration is not present, register with GCM
+			Log.i(TAG, "GCMRegistrar.register");
 			GCMRegistrar.register(this, SENDER_ID);
 		} else {
 			// Device is already registered on GCM
 			if (GCMRegistrar.isRegisteredOnServer(this)) {
-				// Skips registration.
-				// For debugging we used to notify the user that the device is
-				// already registered...
-				Toast.makeText(getApplicationContext(), "Ready to receive cloud messages :-)", Toast.LENGTH_SHORT).show();
+				// Skip registration
+				// Notify the user that the device is registered...
+				Toast.makeText(getApplicationContext(), "Online", Toast.LENGTH_SHORT).show();
 			} else {
 				// Try to register again, but not in the UI thread.
 				// It's also necessary to cancel the thread onDestroy(),
 				// hence the use of AsyncTask instead of a raw thread.
 				final Context context = this;
 				mRegisterTask = new AsyncTask<Void, Void, Void>() {
-
 					@Override
 					protected Void doInBackground(Void... params) {
-						// Register on our server
-						// On server creates a new user
-						ServerUtilities.register(context, name, CommonUtilities.getDeviceAccounts(context), regId);
+						// Create a new user on the messaging server
+						ServerUtilities.register(context, Build.MODEL, CommonUtilities.getDeviceAccounts(context), regId);
 						return null;
 					}
-
 					@Override
 					protected void onPostExecute(Void result) {
 						mRegisterTask = null;
 					}
-
 				};
 				mRegisterTask.execute(null, null, null);
 			}
+			
+			// Force action overflow see http://stackoverflow.com/questions/9286822/how-to-force-use-of-overflow-menu-on-devices-with-menu-button
+			try {
+		        ViewConfiguration config = ViewConfiguration.get(this);
+		        Field menuKeyField = ViewConfiguration.class.getDeclaredField("sHasPermanentMenuKey");
+		        if(menuKeyField != null) {
+		            menuKeyField.setAccessible(true);
+		            menuKeyField.setBoolean(config, false);
+		        }
+		    } catch (Exception ex) {
+		        // Ignore
+		    }
+			
 		}
 
 		/**
@@ -129,8 +134,7 @@ public class MainActivity extends FragmentActivity implements
 
 			@Override
 			public void onPageSelected(int position) {
-				// on changing the page
-				// make respected tab selected
+				// on changing the page make the respected tab selected
 				actionBar.setSelectedNavigationItem(position);
 			}
 
@@ -172,7 +176,7 @@ public class MainActivity extends FragmentActivity implements
 			unregisterReceiver(mHandleMessageReceiver);
 			GCMRegistrar.onDestroy(this);
 		} catch (Exception e) {
-			Log.e("unregisterReceiver error", "> " + e.getMessage());
+			Log.e("MainActivity->onDestroy unregisterReceiver error", "> " + e.getMessage());
 		}
 		super.onDestroy();
 	}
@@ -216,8 +220,7 @@ public class MainActivity extends FragmentActivity implements
 
 	@Override
 	public void onTabSelected(Tab tab, FragmentTransaction ft) {
-		// on tab selected
-		// show respected fragment view
+		// on tab selected show respected fragment view
 		viewPager.setCurrentItem(tab.getPosition());
 	}
 

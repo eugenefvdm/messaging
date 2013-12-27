@@ -43,6 +43,7 @@ public class TaskContentProvider extends ContentProvider {
 
 	private static final String BASE_PATH = "tasks";
 	public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/" + BASE_PATH);
+	public static final Uri CONTENT_URI_SANS_BASE = Uri.parse("content://" + AUTHORITY);
 
 	public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/tasks";
 	public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/task";

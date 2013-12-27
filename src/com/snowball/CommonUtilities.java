@@ -16,7 +16,7 @@ public final class CommonUtilities {
     static final String SERVER_REGISTER_URL = "http://196.201.6.235/whmcs/modules/addons/messaging/register.php"; 
     static final String SERVER_ACTION_URL = "http://196.201.6.235/whmcs/modules/addons/messaging/action.php";
 
-    // Google project id
+    // Google project id for "messaging" as set on the API console
     static final String SENDER_ID = "818143334463"; 
 
     /**

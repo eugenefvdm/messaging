@@ -1,8 +1,12 @@
-package com.snowball;
+package com.snowball._backup;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.snowball.AlertDialogManager;
+import com.snowball.MainActivity;
 import com.snowball.R;
+import com.snowball.R.id;
+import com.snowball.R.layout;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -20,14 +24,11 @@ public class RegisterActivity extends Activity {
 
 	static final int GET_PREFS = 0;
 
-	// alert dialog manager
 	AlertDialogManager alert = new AlertDialogManager();
 
-	// UI elements
 	EditText txtDeviceName;
 	EditText txtEmail;
 
-	// Register button
 	Button btnRegister;
 
 	@Override

@@ -31,13 +31,17 @@
     
     <string name="list_menu_map">Map</string>
     
+    <string name="pref_device_name_summary">Enter your device name</string>
+    <string name="pref_device_name_title">Device name</string>
+    <string name="pref_device_name_default">My Samsung Tab</string>
+    
     <string name="pref_server_url_summary">Enter the server URL</string>
     <string name="pref_server_url_title">Server URL</string>
-    <string name="pref_server_url_default">http://196.201.6.235/whmcs</string>
+    <string name="pref_server_url_default">http://196.201.6.235/whmcs</string>               
     
-    <string name="pref_device_name_summary">Enter your device ame</string>
-    <string name="pref_device_name_title">Device name</string>
-    <string name="pref_device_name_default">My Android Phone</string>        
+    <string name="pref_notification_summary">Enter a notification sound</string>
+    <string name="pref_notification_title">Notification sound</string>
+    <string name="pref_notification_default">content://settings/system/notification_sound</string>
     
     <string name="register_device_name">Device Name:</string>
     <string name="register_email">Email:</string>

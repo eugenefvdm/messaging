@@ -258,7 +258,7 @@ containing a value of this type.
         public static final int task_row=0x7f030006;
     }
     public static final class menu {
-        public static final int list_menu=0x7f0b0000;
+        public static final int job_detail_menu=0x7f0b0000;
         public static final int main_menu=0x7f0b0001;
     }
     public static final class string {
@@ -366,7 +366,7 @@ containing a value of this type.
         /**  Long form sign-in button text [CHAR LIMIT=30] 
          */
         public static final int common_signin_button_text_long=0x7f070013;
-        public static final int context_menu_list_call=0x7f070036;
+        public static final int context_menu_list_call=0x7f070039;
         public static final int error_config=0x7f07001b;
         public static final int gcm_deleted=0x7f070022;
         public static final int gcm_error=0x7f070020;
@@ -379,38 +379,41 @@ containing a value of this type.
         public static final int main_menu_settings=0x7f070029;
         public static final int main_menu_unregister=0x7f07002b;
         public static final int no_tasks=0x7f070028;
-        public static final int pref_device_name_default=0x7f070032;
-        public static final int pref_device_name_summary=0x7f070030;
-        public static final int pref_device_name_title=0x7f070031;
-        public static final int pref_server_url_default=0x7f07002f;
-        public static final int pref_server_url_summary=0x7f07002d;
-        public static final int pref_server_url_title=0x7f07002e;
-        public static final int register_device_name=0x7f070033;
-        public static final int register_email=0x7f070034;
-        public static final int register_register=0x7f070035;
+        public static final int pref_device_name_default=0x7f07002f;
+        public static final int pref_device_name_summary=0x7f07002d;
+        public static final int pref_device_name_title=0x7f07002e;
+        public static final int pref_notification_default=0x7f070035;
+        public static final int pref_notification_summary=0x7f070033;
+        public static final int pref_notification_title=0x7f070034;
+        public static final int pref_server_url_default=0x7f070032;
+        public static final int pref_server_url_summary=0x7f070030;
+        public static final int pref_server_url_title=0x7f070031;
+        public static final int register_device_name=0x7f070036;
+        public static final int register_email=0x7f070037;
+        public static final int register_register=0x7f070038;
         public static final int server_register_error=0x7f070026;
         public static final int server_registered=0x7f070024;
         public static final int server_registering=0x7f070023;
         public static final int server_unregister_error=0x7f070027;
         public static final int server_unregistered=0x7f070025;
-        public static final int task_button_on_hold=0x7f070043;
-        public static final int task_button_start=0x7f070041;
-        public static final int task_button_stop=0x7f070042;
-        public static final int task_description=0x7f070038;
-        public static final int task_edit_department=0x7f070039;
-        public static final int task_edit_description=0x7f07003b;
-        public static final int task_edit_summary=0x7f07003a;
-        public static final int task_finish=0x7f070045;
-        public static final int task_na=0x7f070048;
-        public static final int task_not_started_yet=0x7f070047;
-        public static final int task_row_city=0x7f07003f;
-        public static final int task_row_client_name=0x7f070040;
-        public static final int task_row_department=0x7f07003d;
-        public static final int task_row_icon=0x7f07003c;
-        public static final int task_row_start=0x7f07003e;
-        public static final int task_start=0x7f070044;
-        public static final int task_summary=0x7f070037;
-        public static final int task_time=0x7f070046;
+        public static final int task_button_on_hold=0x7f070046;
+        public static final int task_button_start=0x7f070044;
+        public static final int task_button_stop=0x7f070045;
+        public static final int task_description=0x7f07003b;
+        public static final int task_edit_department=0x7f07003c;
+        public static final int task_edit_description=0x7f07003e;
+        public static final int task_edit_summary=0x7f07003d;
+        public static final int task_finish=0x7f070048;
+        public static final int task_na=0x7f07004b;
+        public static final int task_not_started_yet=0x7f07004a;
+        public static final int task_row_city=0x7f070042;
+        public static final int task_row_client_name=0x7f070043;
+        public static final int task_row_department=0x7f070040;
+        public static final int task_row_icon=0x7f07003f;
+        public static final int task_row_start=0x7f070041;
+        public static final int task_start=0x7f070047;
+        public static final int task_summary=0x7f07003a;
+        public static final int task_time=0x7f070049;
     }
     public static final class style {
         public static final int AppTheme=0x7f0a0000;

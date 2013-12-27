@@ -88,8 +88,9 @@ public class JobListFragment extends ListFragment implements
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
 		Intent i = new Intent(ctx, JobDetailActivity.class);
-		Uri taskUri = Uri.parse(TaskContentProvider.CONTENT_URI + "/" + id);
-		i.putExtra(TaskContentProvider.CONTENT_ITEM_TYPE, taskUri);
+		Uri jobUri = Uri.parse(TaskContentProvider.CONTENT_URI + "/" + id);
+		Log.d(TAG, "List item Uri clicked: " + jobUri);
+		i.putExtra(TaskContentProvider.CONTENT_ITEM_TYPE, jobUri);
 		startActivity(i);
 	}
 
@@ -134,7 +135,7 @@ public class JobListFragment extends ListFragment implements
 				TaskTable.COLUMN_ID, TaskTable.COLUMN_DEPARTMENT,
 				TaskTable.COLUMN_CITY, TaskTable.COLUMN_CLIENT_NAME,
 				TaskTable.COLUMN_START };
-		String selection = "status = ?";
+		String selection = "status != ?";
 		String[] selectionArgs = { mFilter };
 		CursorLoader cursorLoader = new CursorLoader(ctx, TaskContentProvider.CONTENT_URI, projection, selection, selectionArgs, null);
 		return cursorLoader;
