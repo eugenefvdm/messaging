@@ -7,11 +7,14 @@
         <EditTextPreference
             android:key="pref_key_device_name"
             android:summary="@string/pref_device_name_summary"
-            android:title="@string/pref_device_name_title" />
+            android:title="@string/pref_device_name_title"             
+            />
         <EditTextPreference
             android:key="pref_key_server_url"
             android:summary="@string/pref_server_url_summary"
-            android:title="@string/pref_server_url_title" />
+            android:title="@string/pref_server_url_title"
+			android:defaultValue="@string/pref_server_url_default"
+            />
     </PreferenceCategory>
     <PreferenceCategory
         android:key="second_category"

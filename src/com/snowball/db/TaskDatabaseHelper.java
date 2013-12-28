@@ -19,7 +19,7 @@ public class TaskDatabaseHelper extends SQLiteOpenHelper {
   @Override
   public void onCreate(SQLiteDatabase database) {
 	  Log.v("database TaskDatabaseHelper", "onCreate");
-    TaskTable.onCreate(database);
+    JobTable.onCreate(database);
   }
 
   // Method is called during an upgrade of the database,
@@ -28,7 +28,7 @@ public class TaskDatabaseHelper extends SQLiteOpenHelper {
   public void onUpgrade(SQLiteDatabase database, int oldVersion,  int newVersion) {
 	  Log.v("database TaskDatabaseHelper","Checking if update start");
 	  //TaskTable.delete(database);
-    TaskTable.onUpgrade(database, oldVersion, newVersion);
+    JobTable.onUpgrade(database, oldVersion, newVersion);
     Log.v("database TaskDatabaseHelper","Checking if update stop");
   }
 }

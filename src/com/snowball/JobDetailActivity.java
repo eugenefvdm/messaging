@@ -13,11 +13,13 @@ import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
 import com.snowball.R;
-import com.snowball.db.TaskContentProvider;
-import com.snowball.db.TaskTable;
+import com.snowball.db.JobContentProvider;
+import com.snowball.db.JobTable;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.location.Address;
@@ -32,6 +34,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -50,6 +53,8 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 	private Button mBtnStart;
 	private Button mBtnEnd;
 	private Button mBtnPause;
+	private Button mBtnCancel;
+	private Button mBtnDecline;
 	
 	private Uri jobUri;
 
@@ -65,27 +70,29 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 	private String mDepartment, mClient, mLocationName;
 
 	String[] mProjection = {
-			TaskTable.COLUMN_USERID, TaskTable.COLUMN_CALENDAR_ID,
-			TaskTable.COLUMN_TICKET_ID, TaskTable.COLUMN_CLIENT_NAME,
-			TaskTable.COLUMN_ADDRESS1, TaskTable.COLUMN_ADDRESS2,
-			TaskTable.COLUMN_CITY, TaskTable.COLUMN_DEPARTMENT,
-			TaskTable.COLUMN_START_ACTUAL, TaskTable.COLUMN_END_ACTUAL,
-			TaskTable.COLUMN_STATUS };
+			JobTable.COLUMN_USERID, JobTable.COLUMN_CALENDAR_ID,
+			JobTable.COLUMN_TICKET_ID, JobTable.COLUMN_CLIENT_NAME,
+			JobTable.COLUMN_ADDRESS1, JobTable.COLUMN_ADDRESS2,
+			JobTable.COLUMN_CITY, JobTable.COLUMN_DEPARTMENT,
+			JobTable.COLUMN_START_ACTUAL, JobTable.COLUMN_END_ACTUAL,
+			JobTable.COLUMN_STATUS };
 
 	@Override
 	protected void onCreate(Bundle bundle) {
 		super.onCreate(bundle);
-		setContentView(R.layout.task_edit);
+		setContentView(R.layout.job_detail);
 
-		mTxtLocationText = (TextView) findViewById(R.id.task_location);
-		mTxtClientText = (TextView) findViewById(R.id.task_client);
+		mTxtLocationText = (TextView) findViewById(R.id.job_location);
+		mTxtClientText = (TextView) findViewById(R.id.job_client);
 
-		mTxtStartText = (TextView) findViewById(R.id.task_edit_start_text);
-		mTxtStopText = (TextView) findViewById(R.id.task_edit_stop_text);
+		mTxtStartText = (TextView) findViewById(R.id.job_edit_start_text);
+		mTxtStopText = (TextView) findViewById(R.id.job_edit_stop_text);
 
-		mBtnStart = (Button) findViewById(R.id.task_start_button);
-		mBtnEnd = (Button) findViewById(R.id.task_finish_button);
-		mBtnPause = (Button) findViewById(R.id.task_pause_button);
+		mBtnStart = (Button) findViewById(R.id.job_start_button);
+		mBtnEnd = (Button) findViewById(R.id.job_finish_button);
+		mBtnPause = (Button) findViewById(R.id.job_pause_button);
+		mBtnCancel= (Button) findViewById(R.id.job_cancel_button);
+		mBtnDecline = (Button) findViewById(R.id.job_decline_button);
 
 		getActionBar().setDisplayHomeAsUpEnabled(true);
 
@@ -93,10 +100,10 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 
 		if (bundle != null) {
 			// todoUri retrieved from saved instance
-			jobUri = (Uri) bundle.getParcelable(TaskContentProvider.CONTENT_ITEM_TYPE);
+			jobUri = (Uri) bundle.getParcelable(JobContentProvider.CONTENT_ITEM_TYPE);
 		} else {
 			// todoUri passed from the list activity or the intent service
-			jobUri = extras.getParcelable(TaskContentProvider.CONTENT_ITEM_TYPE);
+			jobUri = extras.getParcelable(JobContentProvider.CONTENT_ITEM_TYPE);
 			Log.d(TAG, "jobUri: " + jobUri);
 		}
 		
@@ -114,15 +121,15 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 					Date d = new Date(now * 1000);
 					mTxtStartText.setText(DateFormat.format("dd/MM hh:mm", d));
 					ContentValues values = new ContentValues();					
-					values.put(TaskTable.COLUMN_STATUS, "started");
-					values.put(TaskTable.COLUMN_START_ACTUAL, startTime);
+					values.put(JobTable.COLUMN_STATUS, "started");
+					values.put(JobTable.COLUMN_START_ACTUAL, startTime);
 					getContentResolver().update(jobUri, values, null, null);
 					action = "start";
 				} else {
 					action = "resume";
 				}
-				serverAction(action, startTime);				
-				updateButtons("started");
+				serverAction(action, startTime, null);				
+				setButtonStatus("started");
 			}
 		});
 		
@@ -132,11 +139,11 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 				final String endTime = String.valueOf(now);
 
 				ContentValues values = new ContentValues();				
-				values.put(TaskTable.COLUMN_STATUS, "paused");
+				values.put(JobTable.COLUMN_STATUS, "paused");
 				getContentResolver().update(jobUri, values, null, null);
 				
-				serverAction("pause", endTime);
-				updateButtons("paused");
+				serverAction("pause", endTime, null);
+				setButtonStatus("paused");
 			}
 		});
 
@@ -148,45 +155,107 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 				Date d = new Date(now * 1000);
 				mTxtStopText.setText(DateFormat.format("dd/MM hh:mm", d));				
 				ContentValues values = new ContentValues();
-				values.put(TaskTable.COLUMN_END_ACTUAL, now);
-				values.put(TaskTable.COLUMN_STATUS, "completed");
+				values.put(JobTable.COLUMN_END_ACTUAL, now);
+				values.put(JobTable.COLUMN_STATUS, "completed");
 				getContentResolver().update(jobUri, values, null, null);
 				
-				serverAction("end", endTime);
-				updateButtons("completed");
+				serverAction("end", endTime, null);
+				setButtonStatus("completed");
 			}
 		});
 		
+		mBtnCancel.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				final EditText input = new EditText(JobDetailActivity.this);
+				new AlertDialog.Builder(JobDetailActivity.this)
+			    .setTitle("Enter Cancel Reason")			    
+			    .setView(input)
+			    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+			        public void onClick(DialogInterface dialog, int whichButton) {
+			            String reason = input.getText().toString();
+			            serverAction("cancel", reason, "06/01/2014");
+			            //setButtonStatus("cancelled");
+			        }
+			    }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+			        public void onClick(DialogInterface dialog, int whichButton) {
+			            // Do nothing.
+			        }
+			    }).show();
+			}
+		});		
+		
+		mBtnDecline.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				final EditText input = new EditText(JobDetailActivity.this);
+				new AlertDialog.Builder(JobDetailActivity.this)
+			    .setTitle("Enter Decline Reason")			    
+			    .setView(input)
+			    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+			        public void onClick(DialogInterface dialog, int whichButton) {
+			            String reason = input.getText().toString();
+			            serverAction("decline", reason, "06/01/2014");
+			            //setButtonStatus("declined");
+			        }
+			    }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+			        public void onClick(DialogInterface dialog, int whichButton) {
+			            // Do nothing.
+			        }
+			    }).show();
+			}
+		});		
 	}
 	
-	private void updateButtons(String status) {
+	private void setButtonStatus(String status) {
 		if (status.equals("outstanding")) {
 			mBtnStart.setEnabled(true);
 			mBtnPause.setEnabled(false);
 			mBtnEnd.setEnabled(false);
+			mBtnDecline.setEnabled(true);
 		} else if (status.equals("started")) {
 			mBtnStart.setEnabled(false);
 			mBtnPause.setEnabled(true);
 			mBtnEnd.setEnabled(true);
+			mBtnDecline.setEnabled(false);
 		} else if (status.equals("paused")) {
 			mBtnStart.setText("Resume");
 			mBtnStart.setEnabled(true);
 			mBtnPause.setEnabled(false);
 			mBtnEnd.setEnabled(false);
+			mBtnDecline.setEnabled(true);
 		} else if (status.equals("completed")) {
 			mBtnStart.setEnabled(false);
 			mBtnPause.setEnabled(false);
 			mBtnEnd.setEnabled(false);
+			mBtnDecline.setEnabled(false);
+		} else if (status.equals("declined")) {
+			mBtnStart.setEnabled(false);
+			mBtnPause.setEnabled(false);
+			mBtnEnd.setEnabled(false);
+			mBtnDecline.setEnabled(false);
 		}
 	}
 	
-	private void serverAction(String action, String value) {
+	/**
+	 * Post a message to the server for this calendar ID
+	 * 
+	 * @param action
+	 * @param value
+	 * @param extra Optional parameter used by decline
+	 */
+	private void serverAction(String action, String value, String extra) {
 		ArrayList<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(3);
 		nameValuePairs.add(new BasicNameValuePair("calendar_id", mCalendarId));
 		nameValuePairs.add(new BasicNameValuePair("action", action));		
 		nameValuePairs.add(new BasicNameValuePair("value", value));
+		if (extra != null) {
+			nameValuePairs.add(new BasicNameValuePair("extra", extra));	
+		}		
 		doAsyncTask(nameValuePairs);
 	}
+// I had problems with this optional parameters working	
+//	private void serverAction(String action, String value) {
+//		serverAction(action, value);
+//	}
 
 	@SuppressWarnings("unchecked")
 	private void doAsyncTask(ArrayList<NameValuePair> nameValuePairs) {
@@ -241,21 +310,23 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 		cursor = getContentResolver().query(uri, mProjection, null, null, null);
 		if (cursor != null) {
 			cursor.moveToFirst();
-			mCalendarId = cursor.getString(cursor.getColumnIndexOrThrow(TaskTable.COLUMN_CALENDAR_ID));
-			mDepartment = cursor.getString(cursor.getColumnIndexOrThrow(TaskTable.COLUMN_DEPARTMENT));
-			mClient = cursor.getString(cursor.getColumnIndexOrThrow(TaskTable.COLUMN_CLIENT_NAME));
-			String address1 = cursor.getString(cursor.getColumnIndexOrThrow(TaskTable.COLUMN_ADDRESS1));
-			String address2 = cursor.getString(cursor.getColumnIndexOrThrow(TaskTable.COLUMN_ADDRESS2));
-			String city = cursor.getString(cursor.getColumnIndexOrThrow(TaskTable.COLUMN_CITY));
+			mCalendarId = cursor.getString(cursor.getColumnIndexOrThrow(JobTable.COLUMN_CALENDAR_ID));
+			mDepartment = cursor.getString(cursor.getColumnIndexOrThrow(JobTable.COLUMN_DEPARTMENT));
+			mClient = cursor.getString(cursor.getColumnIndexOrThrow(JobTable.COLUMN_CLIENT_NAME));
+			String address1 = cursor.getString(cursor.getColumnIndexOrThrow(JobTable.COLUMN_ADDRESS1));
+			String address2 = cursor.getString(cursor.getColumnIndexOrThrow(JobTable.COLUMN_ADDRESS2));
+			String city = cursor.getString(cursor.getColumnIndexOrThrow(JobTable.COLUMN_CITY));
 			mLocationName = address1 + ", " + address2 + ", " + city;
-			String status = cursor.getString(cursor.getColumnIndexOrThrow(TaskTable.COLUMN_STATUS));
-			updateButtons(status);
+			String status = cursor.getString(cursor.getColumnIndexOrThrow(JobTable.COLUMN_STATUS));
+			setButtonStatus(status);
 			mTxtLocationText.setText(mLocationName);
 			mTxtClientText.setText(mClient);
 			// Obtain Unix time from stored database field and display real date
-			long unixTime = cursor.getLong(cursor.getColumnIndexOrThrow(TaskTable.COLUMN_START_ACTUAL));
-			Date d = new Date(unixTime * 1000);
-			mTxtStartText.setText(DateFormat.format("dd/MM hh:mm", d));
+			long unixTime = cursor.getLong(cursor.getColumnIndexOrThrow(JobTable.COLUMN_START_ACTUAL));
+			if (unixTime != 0) {
+				Date d = new Date(unixTime * 1000);
+				mTxtStartText.setText(DateFormat.format("dd/MM hh:mm", d));	
+			}			
 			cursor.close();
 		}
 	}
@@ -263,7 +334,7 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 		// saveState();
-		outState.putParcelable(TaskContentProvider.CONTENT_ITEM_TYPE, jobUri);
+		outState.putParcelable(JobContentProvider.CONTENT_ITEM_TYPE, jobUri);
 	}
 
 	@Override

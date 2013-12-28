@@ -3,7 +3,7 @@ package com.snowball.db;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
-public class TaskTable {
+public class JobTable {
 
 	// Database table
 	public static final String TABLE_TASK = "task";

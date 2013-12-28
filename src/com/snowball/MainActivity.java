@@ -30,7 +30,7 @@ import android.widget.Toast;
 
 import com.google.android.gcm.GCMRegistrar;
 import com.snowball.R;
-import com.snowball.db.TaskContentProvider;
+import com.snowball.db.JobContentProvider;
 
 public class MainActivity extends FragmentActivity implements
 		ActionBar.TabListener {
@@ -210,7 +210,7 @@ public class MainActivity extends FragmentActivity implements
 	}
 	
 	private void deleteAll() {
-		Uri uri = Uri.parse(TaskContentProvider.CONTENT_URI + "/");
+		Uri uri = Uri.parse(JobContentProvider.CONTENT_URI + "/");
 		getContentResolver().delete(uri, null, null);		
 	}
 

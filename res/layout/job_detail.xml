@@ -7,38 +7,55 @@
     android:orientation="vertical" >
 
     <TextView
-        android:id="@+id/task_location"
+        android:id="@+id/job_location"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/task_edit_summary"
+        android:hint="@string/job_edit_summary"
         android:textAppearance="?android:attr/textAppearanceMedium" >
     </TextView>
     
     <TextView
-        android:id="@+id/task_client"
+        android:id="@+id/job_client"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/task_edit_description"
+        android:hint="@string/job_edit_description"
         android:textAppearance="?android:attr/textAppearanceMedium" >
     </TextView>
 
     <Button
-        android:id="@+id/task_start_button"
-        android:layout_width="fill_parent"
+        android:id="@+id/job_start_button"
+        android:layout_width="192dp"
         android:layout_height="wrap_content"
-        android:text="@string/task_button_start" />
+        android:layout_gravity="center_horizontal"
+        android:text="@string/job_button_start" />
 
     <Button
-        android:id="@+id/task_finish_button"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"        
-        android:text="@string/task_button_stop" />
+        android:id="@+id/job_finish_button"
+        android:layout_width="192dp"
+        android:layout_height="wrap_content"      
+        android:layout_gravity="center_horizontal"  
+        android:text="@string/job_button_stop" />
 
     <Button
-        android:id="@+id/task_pause_button"
-        android:layout_width="fill_parent"
+        android:id="@+id/job_pause_button"
+        android:layout_width="192dp"
         android:layout_height="wrap_content"
-        android:text="@string/task_button_on_hold" />
+        android:layout_gravity="center_horizontal"
+        android:text="@string/job_button_pause" />
+    
+    <Button
+        android:id="@+id/job_cancel_button"
+        android:layout_width="192dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="@string/job_button_cancel" />
+    
+    <Button
+        android:id="@+id/job_decline_button"
+        android:layout_width="192dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="@string/job_button_decline" />
 
     <TableLayout
         android:layout_width="fill_parent"
@@ -50,22 +67,22 @@
             android:layout_height="wrap_content" >
 
             <TextView
-                android:id="@+id/task_edit_start_label"
+                android:id="@+id/job_detail_start_label"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1.0"
                 android:gravity="right"
                 android:paddingRight="15dip"
-                android:text="@string/task_start"
+                android:text="@string/job_start"
                 android:textAppearance="?android:attr/textAppearanceMedium" />
 
             <TextView
-                android:id="@+id/task_edit_start_text"
+                android:id="@+id/job_edit_start_text"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1.0"
                 android:paddingLeft="15dip"
-                android:text="@string/task_not_started_yet"
+                android:text="@string/job_not_started_yet"
                 android:textAppearance="?android:attr/textAppearanceMedium" />
         </TableRow>
 
@@ -75,47 +92,47 @@
             android:layout_height="wrap_content" >
 
             <TextView
-                android:id="@+id/task_edit_stop_label"
+                android:id="@+id/job_edit_stop_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1.0"
                 android:gravity="right"
                 android:paddingRight="15dip"
-                android:text="@string/task_finish"
+                android:text="@string/job_finish"
                 android:textAppearance="?android:attr/textAppearanceMedium" />
 
             <TextView
-                android:id="@+id/task_edit_stop_text"
+                android:id="@+id/job_edit_stop_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1.0"
                 android:paddingLeft="15dip"
-                android:text="@string/task_na"
+                android:text="@string/job_not_available"
                 android:textAppearance="?android:attr/textAppearanceMedium" />
         </TableRow>
 
         <TableRow
-            android:id="@+id/TableRow01"
+            android:id="@+id/TableRow3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" >
 
             <TextView
-                android:id="@+id/task_edit_total_label"
+                android:id="@+id/job_detail_total_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1.0"
                 android:gravity="right"
                 android:paddingRight="15dip"
-                android:text="@string/task_time"
+                android:text="@string/job_detail_total_time"
                 android:textAppearance="?android:attr/textAppearanceMedium" />
 
             <TextView
-                android:id="@+id/task_edit_total_text"
+                android:id="@+id/job_detail_total_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1.0"
                 android:paddingLeft="15dip"
-                android:text="@string/task_na"
+                android:text="@string/job_not_available"
                 android:textAppearance="?android:attr/textAppearanceMedium" />
         </TableRow>
     </TableLayout>

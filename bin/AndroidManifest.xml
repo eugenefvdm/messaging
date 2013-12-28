@@ -88,7 +88,7 @@
         </activity>
 
         <provider
-            android:name="com.snowball.db.TaskContentProvider"
+            android:name="com.snowball.db.JobContentProvider"
             android:authorities="com.snowball"
             android:exported="false" >
         </provider>

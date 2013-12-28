@@ -27,7 +27,7 @@ import android.util.Log;
  * @author eugene
  * 
  */
-public class TaskContentProvider extends ContentProvider {
+public class JobContentProvider extends ContentProvider {
 
 	private static final String TAG = "MyTaskContentProvider";
 
@@ -73,7 +73,7 @@ public class TaskContentProvider extends ContentProvider {
 		checkColumns(projection);
 
 		// Set the table
-		queryBuilder.setTables(TaskTable.TABLE_TASK);
+		queryBuilder.setTables(JobTable.TABLE_TASK);
 
 		int uriType = sURIMatcher.match(uri);
 		switch (uriType) {
@@ -81,11 +81,11 @@ public class TaskContentProvider extends ContentProvider {
 			break;
 		case TASK_ID:
 			// adding the ID to the original query
-			queryBuilder.appendWhere(TaskTable.COLUMN_ID + "=" + uri.getLastPathSegment());
+			queryBuilder.appendWhere(JobTable.COLUMN_ID + "=" + uri.getLastPathSegment());
 			break;
 		case TASK_CALENDAR_ID:
 			// adding the ticket_id to the original query
-			queryBuilder.appendWhere(TaskTable.COLUMN_TICKET_ID + "=" + uri.getLastPathSegment());
+			queryBuilder.appendWhere(JobTable.COLUMN_TICKET_ID + "=" + uri.getLastPathSegment());
 			break;
 		default:
 			throw new IllegalArgumentException("Unknown URI: " + uri);
@@ -112,7 +112,7 @@ public class TaskContentProvider extends ContentProvider {
 		long id = 0;
 		switch (uriType) {
 		case TASKS:
-			id = sqlDB.insert(TaskTable.TABLE_TASK, null, values);
+			id = sqlDB.insert(JobTable.TABLE_TASK, null, values);
 			break;
 		default:
 			throw new IllegalArgumentException("Unknown URI: " + uri);
@@ -128,22 +128,22 @@ public class TaskContentProvider extends ContentProvider {
 		int rowsDeleted = 0;
 		switch (uriType) {
 		case TASKS:
-			rowsDeleted = sqlDB.delete(TaskTable.TABLE_TASK, selection, selectionArgs);
+			rowsDeleted = sqlDB.delete(JobTable.TABLE_TASK, selection, selectionArgs);
 			break;
 		case TASK_ID:
 			String id = uri.getLastPathSegment();
 			if (TextUtils.isEmpty(selection)) {
-				rowsDeleted = sqlDB.delete(TaskTable.TABLE_TASK, TaskTable.COLUMN_ID + "=" + id, null);
+				rowsDeleted = sqlDB.delete(JobTable.TABLE_TASK, JobTable.COLUMN_ID + "=" + id, null);
 			} else {
-				rowsDeleted = sqlDB.delete(TaskTable.TABLE_TASK, TaskTable.COLUMN_ID + "=" + id + " and " + selection, selectionArgs);
+				rowsDeleted = sqlDB.delete(JobTable.TABLE_TASK, JobTable.COLUMN_ID + "=" + id + " and " + selection, selectionArgs);
 			}
 			break;
 		case TASK_CALENDAR_ID:
 			String calendar_id = uri.getLastPathSegment();
 			if (TextUtils.isEmpty(selection)) {
-				rowsDeleted = sqlDB.delete(TaskTable.TABLE_TASK, TaskTable.COLUMN_CALENDAR_ID + "=" + calendar_id, null);
+				rowsDeleted = sqlDB.delete(JobTable.TABLE_TASK, JobTable.COLUMN_CALENDAR_ID + "=" + calendar_id, null);
 			} else {
-				rowsDeleted = sqlDB.delete(TaskTable.TABLE_TASK, TaskTable.COLUMN_CALENDAR_ID + "=" + calendar_id + " and " + selection, selectionArgs);
+				rowsDeleted = sqlDB.delete(JobTable.TABLE_TASK, JobTable.COLUMN_CALENDAR_ID + "=" + calendar_id + " and " + selection, selectionArgs);
 			}
 			break;
 		default:
@@ -162,22 +162,22 @@ public class TaskContentProvider extends ContentProvider {
 		int rowsUpdated = 0;
 		switch (uriType) {
 		case TASKS:
-			rowsUpdated = sqlDB.update(TaskTable.TABLE_TASK, values, selection, selectionArgs);
+			rowsUpdated = sqlDB.update(JobTable.TABLE_TASK, values, selection, selectionArgs);
 			break;
 		case TASK_ID:
 			String id = uri.getLastPathSegment();
 			if (TextUtils.isEmpty(selection)) {
-				rowsUpdated = sqlDB.update(TaskTable.TABLE_TASK, values, TaskTable.COLUMN_ID + "=" + id, null);
+				rowsUpdated = sqlDB.update(JobTable.TABLE_TASK, values, JobTable.COLUMN_ID + "=" + id, null);
 			} else {
-				rowsUpdated = sqlDB.update(TaskTable.TABLE_TASK, values, TaskTable.COLUMN_ID + "=" + id + " and " + selection, selectionArgs);
+				rowsUpdated = sqlDB.update(JobTable.TABLE_TASK, values, JobTable.COLUMN_ID + "=" + id + " and " + selection, selectionArgs);
 			}
 			break;
 		case TASK_CALENDAR_ID:
 			String calendar_id = uri.getLastPathSegment();
 			if (TextUtils.isEmpty(selection)) {
-				rowsUpdated = sqlDB.update(TaskTable.TABLE_TASK, values, TaskTable.COLUMN_CALENDAR_ID + "=" + calendar_id, null);
+				rowsUpdated = sqlDB.update(JobTable.TABLE_TASK, values, JobTable.COLUMN_CALENDAR_ID + "=" + calendar_id, null);
 			} else {
-				rowsUpdated = sqlDB.update(TaskTable.TABLE_TASK, values, TaskTable.COLUMN_CALENDAR_ID + "=" + calendar_id + " and " + selection, selectionArgs);
+				rowsUpdated = sqlDB.update(JobTable.TABLE_TASK, values, JobTable.COLUMN_CALENDAR_ID + "=" + calendar_id + " and " + selection, selectionArgs);
 			}
 			break;
 		default:
@@ -189,14 +189,14 @@ public class TaskContentProvider extends ContentProvider {
 
 	private void checkColumns(String[] projection) {
 		String[] available = {
-				TaskTable.COLUMN_USERID,
-				TaskTable.COLUMN_CALENDAR_ID, TaskTable.COLUMN_TICKET_ID,
-				TaskTable.COLUMN_DEPARTMENT, TaskTable.COLUMN_CLIENT_NAME,
-				TaskTable.COLUMN_COMPANYNAME, TaskTable.COLUMN_PHONENUMBER,
-				TaskTable.COLUMN_ADDRESS1, TaskTable.COLUMN_ADDRESS2,
-				TaskTable.COLUMN_CITY, TaskTable.COLUMN_ID,
-				TaskTable.COLUMN_START, TaskTable.COLUMN_START_ACTUAL,
-				TaskTable.COLUMN_END, TaskTable.COLUMN_END_ACTUAL, TaskTable.COLUMN_STATUS };
+				JobTable.COLUMN_USERID,
+				JobTable.COLUMN_CALENDAR_ID, JobTable.COLUMN_TICKET_ID,
+				JobTable.COLUMN_DEPARTMENT, JobTable.COLUMN_CLIENT_NAME,
+				JobTable.COLUMN_COMPANYNAME, JobTable.COLUMN_PHONENUMBER,
+				JobTable.COLUMN_ADDRESS1, JobTable.COLUMN_ADDRESS2,
+				JobTable.COLUMN_CITY, JobTable.COLUMN_ID,
+				JobTable.COLUMN_START, JobTable.COLUMN_START_ACTUAL,
+				JobTable.COLUMN_END, JobTable.COLUMN_END_ACTUAL, JobTable.COLUMN_STATUS };
 		if (projection != null) {
 			HashSet<String> requestedColumns = new HashSet<String>(Arrays.asList(projection));
 			HashSet<String> availableColumns = new HashSet<String>(Arrays.asList(available));
@@ -266,17 +266,17 @@ public class TaskContentProvider extends ContentProvider {
 		}
 
 		ContentValues values = new ContentValues();
-		values.put(TaskTable.COLUMN_USERID, userid);
-		values.put(TaskTable.COLUMN_CALENDAR_ID, calendar_id);
-		values.put(TaskTable.COLUMN_TICKET_ID, ticket_id);
-		values.put(TaskTable.COLUMN_DEPARTMENT, department);
-		values.put(TaskTable.COLUMN_CLIENT_NAME, client_name);
-		values.put(TaskTable.COLUMN_COMPANYNAME, companyname);
-		values.put(TaskTable.COLUMN_PHONENUMBER, phonenumber);
-		values.put(TaskTable.COLUMN_ADDRESS1, address1);
-		values.put(TaskTable.COLUMN_ADDRESS2, address2);
-		values.put(TaskTable.COLUMN_CITY, city);
-		values.put(TaskTable.COLUMN_START, start);
+		values.put(JobTable.COLUMN_USERID, userid);
+		values.put(JobTable.COLUMN_CALENDAR_ID, calendar_id);
+		values.put(JobTable.COLUMN_TICKET_ID, ticket_id);
+		values.put(JobTable.COLUMN_DEPARTMENT, department);
+		values.put(JobTable.COLUMN_CLIENT_NAME, client_name);
+		values.put(JobTable.COLUMN_COMPANYNAME, companyname);
+		values.put(JobTable.COLUMN_PHONENUMBER, phonenumber);
+		values.put(JobTable.COLUMN_ADDRESS1, address1);
+		values.put(JobTable.COLUMN_ADDRESS2, address2);
+		values.put(JobTable.COLUMN_CITY, city);
+		values.put(JobTable.COLUMN_START, start);
 		return values;
 	}
 

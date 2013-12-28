@@ -33,12 +33,12 @@
     
     <string name="pref_device_name_summary">Enter your device name</string>
     <string name="pref_device_name_title">Device name</string>
-    <string name="pref_device_name_default">My Samsung Tab</string>
+    <string name="pref_device_name_default">My Samsung Tab</string>    
     
     <string name="pref_server_url_summary">Enter the server URL</string>
     <string name="pref_server_url_title">Server URL</string>
-    <string name="pref_server_url_default">http://196.201.6.235/whmcs</string>               
-    
+    <string name="pref_server_url_default">http://196.201.6.235/whmcs</string>
+                       
     <string name="pref_notification_summary">Enter a notification sound</string>
     <string name="pref_notification_title">Notification sound</string>
     <string name="pref_notification_default">content://settings/system/notification_sound</string>
@@ -52,8 +52,8 @@
     <string name="task_description">Delete Task</string>
     
     <string name="task_edit_department">Site Survey</string>
-    <string name="task_edit_summary">Location</string>
-    <string name="task_edit_description">Client</string>
+    <string name="job_edit_summary">Location</string>
+    <string name="job_edit_description">Client</string>
     
     <string name="task_row_icon">Icon</string>
     <string name="task_row_department">Site Survey</string>
@@ -61,14 +61,16 @@
     <string name="task_row_city">Stellenbosch</string>
     <string name="task_row_client_name">Eugene van der Merwe</string>
     
-    <string name="task_button_start">Start</string>
-    <string name="task_button_stop">Finish</string>
-    <string name="task_button_on_hold">Put on hold</string>    
+    <string name="job_button_start">Start</string>
+    <string name="job_button_stop">Finish</string>
+    <string name="job_button_pause">Put on hold</string>    
+    <string name="job_button_decline">Decline</string>
+    <string name="job_button_cancel">Cancel &amp; Escalate</string>
     
-    <string name="task_start">Started</string>
-    <string name="task_finish">Finshed</string>
-    <string name="task_time">Time Spent</string>
-    <string name="task_not_started_yet">No started yet</string>
-    <string name="task_na">-</string>
+    <string name="job_start">Started</string>
+    <string name="job_finish">Finshed</string>
+    <string name="job_detail_total_time">Time Spent</string>
+    <string name="job_not_started_yet">No started yet</string>
+    <string name="job_not_available">-</string>
 
 </resources>

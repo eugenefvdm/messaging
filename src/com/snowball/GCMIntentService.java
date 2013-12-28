@@ -35,7 +35,7 @@ import android.util.Log;
 
 import com.google.android.gcm.GCMBaseIntentService;
 import com.snowball.R;
-import com.snowball.db.TaskContentProvider;
+import com.snowball.db.JobContentProvider;
 
 public class GCMIntentService extends GCMBaseIntentService {
 
@@ -93,13 +93,13 @@ public class GCMIntentService extends GCMBaseIntentService {
         	messageType = "First time registration! Welcome!";
         	Log.e(TAG, "Message is NULL!");
         } else {
-        	String action = TaskContentProvider.getAction(message);
+        	String action = JobContentProvider.getAction(message);
         	if (action != null) {
-        		values = TaskContentProvider.convertMessageToContentValues(action, message);
+        		values = JobContentProvider.convertMessageToContentValues(action, message);
         		department = values.getAsString("department");
         		if (action.equals("insert")) {
         			// Insert record and obtain ID for use in NotificationIntent
-        			Uri jobUri = getContentResolver().insert(TaskContentProvider.CONTENT_URI, values);
+        			Uri jobUri = getContentResolver().insert(JobContentProvider.CONTENT_URI, values);
         			long newDbRecord = ContentUris.parseId(jobUri);
         			// Convert long to int because Pending Intent Request Codes need to be integer
         			dbRecordId = (int) newDbRecord;
@@ -107,13 +107,13 @@ public class GCMIntentService extends GCMBaseIntentService {
         			messageType = "New " + department;
         		} else if (action.equals("update")) {
         			dbRecordId = values.getAsInteger("calendar_id");
-        			Uri todoUri = Uri.parse(TaskContentProvider.CONTENT_URI + "/ticket" + "/" + dbRecordId);        			
+        			Uri todoUri = Uri.parse(JobContentProvider.CONTENT_URI + "/ticket" + "/" + dbRecordId);        			
         			getContentResolver().update(todoUri, values, null, null);
         			messageType = "Updated " + department;
         		} else if (action.equals("delete")) {        			
         			dbRecordId = values.getAsInteger("calendar_id");
         			Log.d(TAG, "Action delete being executed on calendar_id " + String.valueOf(dbRecordId));
-        			Uri todoUri = Uri.parse(TaskContentProvider.CONTENT_URI + "/ticket" + "/" + dbRecordId);        			
+        			Uri todoUri = Uri.parse(JobContentProvider.CONTENT_URI + "/ticket" + "/" + dbRecordId);        			
         			getContentResolver().delete(todoUri, null, null);
         			//messageType = "Deleted " + department;
         			messageType = "Deleted item";
@@ -141,8 +141,8 @@ public class GCMIntentService extends GCMBaseIntentService {
     	
     	Intent notificationIntent = new Intent(context, JobDetailActivity.class);
     	if (dbRecordId != 0) {
-    		Uri jobUri = Uri.parse(TaskContentProvider.CONTENT_URI + "/" + dbRecordId);
-    		notificationIntent.putExtra(TaskContentProvider.CONTENT_ITEM_TYPE, jobUri);
+    		Uri jobUri = Uri.parse(JobContentProvider.CONTENT_URI + "/" + dbRecordId);
+    		notificationIntent.putExtra(JobContentProvider.CONTENT_ITEM_TYPE, jobUri);
     		Log.d(TAG, "Adding jobUri " + jobUri + " to intent");
     	}		
     	notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
