@@ -6,12 +6,12 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
-public class TaskDatabaseHelper extends SQLiteOpenHelper {
+public class JobDatabaseHelper extends SQLiteOpenHelper {
 
-  private static final String DATABASE_NAME = "tasktable.db";
-  private static final int DATABASE_VERSION = 21;
+  private static final String DATABASE_NAME = "jobtable.db";
+  private static final int DATABASE_VERSION = 22;
 
-  public TaskDatabaseHelper(Context context) {
+  public JobDatabaseHelper(Context context) {
     super(context, DATABASE_NAME, null, DATABASE_VERSION);
   }
 

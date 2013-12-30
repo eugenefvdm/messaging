@@ -46,6 +46,7 @@ public class MainActivity extends FragmentActivity implements
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		Log.v(TAG, "onCreate");
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		
@@ -57,6 +58,19 @@ public class MainActivity extends FragmentActivity implements
 		actionBar.setHomeButtonEnabled(false);
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);		
 
+//		Bundle extras = getIntent().getExtras();
+//		if (savedInstanceState != null) {
+//			// Not implemented but here copied from JobDetailActivity to see if notifications must be reset
+//		} else {
+//			// Check if we're being called from notification panel (GCMIntent)
+//			if (extras != null) {
+//				String gcmTrue = extras.getString("gcmTrue");
+//				if (gcmTrue.equals("true")) {
+//					App.setPendingNotificationsCount(0);
+//				}	
+//			}							
+//		}
+		
 		// Add Tabs
 		for (String tab_name : tabs) {
 			actionBar.addTab(actionBar.newTab().setText(tab_name)
@@ -66,11 +80,12 @@ public class MainActivity extends FragmentActivity implements
 		// Initialize preferences
 		PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 		
-		setTitle("Snowball Job List");
+		setTitle("Task List");
 				
 		// Make sure the device has the proper dependencies
 		Log.i(TAG, "Checking if device has proper dependencies...");
-		GCMRegistrar.checkDevice(this);
+		// Testing to see if GL events go
+		//GCMRegistrar.checkDevice(this);
 		Log.i(TAG, "...finished checking if device has proper dependencies");
 		// Make sure the manifest was properly set - uncomment when ready
 		// http://developer.android.com/reference/com/google/android/gcm/GCMRegistrar.html#checkManifest(android.content.Context)
@@ -79,21 +94,24 @@ public class MainActivity extends FragmentActivity implements
 		registerReceiver(mHandleMessageReceiver, new IntentFilter(DISPLAY_MESSAGE_ACTION));
 
 		// Get GCM registration id
-		Log.i(TAG, "GCMRegistrar.getRegistrationId");
+		Log.w(TAG, "GCMRegistrar.getRegistrationId");
 		final String regId = GCMRegistrar.getRegistrationId(this);
 
 		// Check if a registration ID is already present
 		if (regId.equals("")) {
 			// Registration is not present, register with GCM
-			Log.i(TAG, "GCMRegistrar.register");
+			Log.w(TAG, "GCMRegistrar.register");
 			GCMRegistrar.register(this, SENDER_ID);
 		} else {
 			// Device is already registered on GCM
+			Log.w(TAG, "GCMRegistrar.isRegisteredOnServer check");
 			if (GCMRegistrar.isRegisteredOnServer(this)) {
+				Log.w(TAG, "true");
 				// Skip registration
 				// Notify the user that the device is registered...
-				Toast.makeText(getApplicationContext(), "Online", Toast.LENGTH_SHORT).show();
+				//Toast.makeText(getApplicationContext(), "Online", Toast.LENGTH_SHORT).show();
 			} else {
+				Log.w(TAG, "false");
 				// Try to register again, but not in the UI thread.
 				// It's also necessary to cancel the thread onDestroy(),
 				// hence the use of AsyncTask instead of a raw thread.
@@ -102,7 +120,7 @@ public class MainActivity extends FragmentActivity implements
 					@Override
 					protected Void doInBackground(Void... params) {
 						// Create a new user on the messaging server
-						ServerUtilities.register(context, Build.MODEL, CommonUtilities.getDeviceAccounts(context), regId);
+						ServerUtilities.register(context, regId);
 						return null;
 					}
 					@Override
@@ -148,14 +166,71 @@ public class MainActivity extends FragmentActivity implements
 		});
 	}
 	
+	@Override
+	protected void onStart() {
+		Log.v(TAG, "onStart");
+		// TODO Auto-generated method stub
+		super.onStart();
+	}	
+	
+	@Override
+	protected void onRestoreInstanceState(Bundle savedInstanceState) {
+		Log.v(TAG, "onRestoreInstanceState");
+		// TODO Auto-generated method stub
+		super.onRestoreInstanceState(savedInstanceState);
+	}
+
+	@Override
+	protected void onResume() {
+		// TODO Auto-generated method stub
+		Log.v(TAG, "onResume");
+		super.onResume();		
+	}
+	
+	@Override
+	protected void onPause() {
+		// TODO Auto-generated method stub
+		Log.v(TAG, "onPause");
+		super.onPause();		
+	}	
+	
+	@Override
+	protected void onStop() {
+		Log.v(TAG, "onStop");
+		// TODO Auto-generated method stub
+		super.onStop();
+	}
+	
+	@Override
+	protected void onDestroy() {
+		Log.v(TAG, "onDestroy");
+		if (mRegisterTask != null) {
+			mRegisterTask.cancel(true);
+		}
+		try {
+			unregisterReceiver(mHandleMessageReceiver);
+			GCMRegistrar.onDestroy(this);
+		} catch (Exception e) {
+			Log.e(TAG, "MainActivity->onDestroy unregisterReceiver exception: " + e.getMessage());
+		}		
+		super.onDestroy();		
+	}
+
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		// TODO Auto-generated method stub
+		Log.v(TAG, "onSaveInstanceState");
+		super.onSaveInstanceState(outState);		
+	}
+	
 	/**
-	 * Receive push message
+	 * Receive push message - see displayMessage in CommonUtilities
 	 * */
 	private final BroadcastReceiver mHandleMessageReceiver = new BroadcastReceiver() {
 		@Override
-		public void onReceive(Context context, Intent intent) {
-			Log.d(TAG, "BroadcastReceiver called");
+		public void onReceive(Context context, Intent intent) {			
 			String newMessage = intent.getExtras().getString(EXTRA_MESSAGE);
+			Log.d(TAG, "BroadcastReceiver called with this message " + newMessage);
 			// Waking up device if it is sleeping
 			WakeLocker.acquire(getApplicationContext());
 
@@ -164,23 +239,12 @@ public class MainActivity extends FragmentActivity implements
 
 			// Release wake lock
 			WakeLocker.release();
+			
+//			App.setPendingNotificationsCount(0);
+//			App.clearMessages();
 		}
 	};
-	
-	@Override
-	protected void onDestroy() {
-		if (mRegisterTask != null) {
-			mRegisterTask.cancel(true);
-		}
-		try {
-			unregisterReceiver(mHandleMessageReceiver);
-			GCMRegistrar.onDestroy(this);
-		} catch (Exception e) {
-			Log.e("MainActivity->onDestroy unregisterReceiver error", "> " + e.getMessage());
-		}
-		super.onDestroy();
-	}
-	
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.main_menu, menu);

@@ -32,7 +32,7 @@ public class JobContentProvider extends ContentProvider {
 	private static final String TAG = "MyTaskContentProvider";
 
 	// database
-	private TaskDatabaseHelper database;
+	private JobDatabaseHelper database;
 
 	// used for the UriMacher
 	private static final int TASKS = 10;
@@ -58,7 +58,7 @@ public class JobContentProvider extends ContentProvider {
 
 	@Override
 	public boolean onCreate() {
-		database = new TaskDatabaseHelper(getContext());
+		database = new JobDatabaseHelper(getContext());
 		return false;
 	}
 
@@ -243,12 +243,14 @@ public class JobContentProvider extends ContentProvider {
 		String address1 = null;
 		String address2 = null;
 		String city = null;
+		String extra = null;
 		int start = 0;
 		try {
 			jObject = new JSONObject(message);
 			JSONObject payload = jObject.getJSONObject(action);
 			calendar_id = payload.getInt("calendar_id");
 			if (action.equals("insert") || action.equals("update")) {
+				start = payload.getInt("start");
 				userid = payload.getInt("userid");			
 				ticket_id = payload.getInt("ticket_id");
 				department = payload.getString("department");
@@ -258,17 +260,18 @@ public class JobContentProvider extends ContentProvider {
 				address1 = payload.getString("address1");
 				address2 = payload.getString("address2");
 				city = payload.getString("city");
-				start = payload.getInt("start");	
+				extra = payload.getString("extra");	
 			}			
 		} catch (JSONException e) {
 			Log.e(TAG, "Error parsing JSON");
 			e.printStackTrace();
 		}
 
-		ContentValues values = new ContentValues();
-		values.put(JobTable.COLUMN_USERID, userid);
+		ContentValues values = new ContentValues();		
 		values.put(JobTable.COLUMN_CALENDAR_ID, calendar_id);
+		values.put(JobTable.COLUMN_START, start);
 		values.put(JobTable.COLUMN_TICKET_ID, ticket_id);
+		values.put(JobTable.COLUMN_USERID, userid);
 		values.put(JobTable.COLUMN_DEPARTMENT, department);
 		values.put(JobTable.COLUMN_CLIENT_NAME, client_name);
 		values.put(JobTable.COLUMN_COMPANYNAME, companyname);
@@ -276,7 +279,7 @@ public class JobContentProvider extends ContentProvider {
 		values.put(JobTable.COLUMN_ADDRESS1, address1);
 		values.put(JobTable.COLUMN_ADDRESS2, address2);
 		values.put(JobTable.COLUMN_CITY, city);
-		values.put(JobTable.COLUMN_START, start);
+		values.put(JobTable.COLUMN_EXTRA, extra);
 		return values;
 	}
 

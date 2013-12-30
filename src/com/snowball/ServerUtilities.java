@@ -16,6 +16,9 @@ import java.util.Map.Entry;
 import java.util.Random;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.os.Build;
+import android.preference.PreferenceManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
@@ -32,14 +35,19 @@ public final class ServerUtilities {
 	 * Register this account/device pair within the server.
 	 * 
 	 */
-	static void register(final Context context, String name, String email,
-			final String regId) {
-		Log.i(TAG, "registering device (regId = " + regId + ")");
-		String serverUrl = SERVER_REGISTER_URL;
+	static void register(final Context context, final String regId) {
+		String phoneModel = Build.MODEL;
+		String firstEmailAccount = CommonUtilities.getDeviceAccounts(context); 
+		Log.i(TAG, "Registering device regId:  " + regId);
+		// Obtain serverUrl from prefs
+		// Was SERVER_REGISTER_URL = "http://196.201.6.235/whmcs/modules/addons/messaging/register.php";
+		SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+		String defaultValue = context.getResources().getString(R.string.server_url_default);
+		String serverUrl = sharedPref.getString(context.getString(R.string.server_url), defaultValue);
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("regId", regId);
-		params.put("name", name);
-		params.put("email", email);
+		params.put("name", phoneModel);
+		params.put("email", firstEmailAccount);
 		// TODO determine if device_id code should be here or
 		// RegisterActivity->MainActivity->ServerUtilities
 		TelephonyManager telephonyManager;

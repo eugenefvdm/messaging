@@ -14,7 +14,7 @@ import android.view.MenuItem;
 
 public class MapPane extends Activity {
 
-	private static final String TAG = "MapPane";
+	//private static final String TAG = "MapPane";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {

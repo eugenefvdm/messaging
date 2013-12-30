@@ -10,7 +10,7 @@
         android:id="@+id/job_location"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/job_edit_summary"
+        android:hint="@string/job_detail_location"
         android:textAppearance="?android:attr/textAppearanceMedium" >
     </TextView>
     
@@ -18,7 +18,7 @@
         android:id="@+id/job_client"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/job_edit_description"
+        android:hint="@string/job_detail_client"
         android:textAppearance="?android:attr/textAppearanceMedium" >
     </TextView>
 

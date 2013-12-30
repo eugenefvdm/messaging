@@ -1,13 +1,5 @@
 <resources>
     
-    <!-- 
-    <string name="title_activity_main">Push Notifications</string>
-    <string name="options_register">Register</string>
-    <string name="options_unregister">Unregister</string>
-    <string name="options_clear">Clear</string>
-    <string name="options_exit">Exit</string>
-     -->
-
     <string name="app_name">Snowball</string>    
     <string name="error_config">Please set the %1$s constant and recompile the app.</string>
     <string name="already_registered">Device is already registered on server.</string>
@@ -31,17 +23,21 @@
     
     <string name="list_menu_map">Map</string>
     
-    <string name="pref_device_name_summary">Enter your device name</string>
-    <string name="pref_device_name_title">Device name</string>
-    <string name="pref_device_name_default">My Samsung Tab</string>    
-    
-    <string name="pref_server_url_summary">Enter the server URL</string>
-    <string name="pref_server_url_title">Server URL</string>
-    <string name="pref_server_url_default">http://196.201.6.235/whmcs</string>
-                       
+    <!-- Preferences  -->
+    <string name="device_name">device_name</string>
+    <string name="device_name_summary">Enter your device name</string>
+    <string name="device_name_title">Device name</string>
+    <string name="device_name_default">My Samsung Tab</string>        
+    <string name="server_url">server_url</string>
+    <string name="server_url_summary">Enter the server URL</string>
+    <string name="server_url_title">Server URL</string>
+    <string name="server_url_default">http://196.201.6.235/whmcs</string>
     <string name="pref_notification_summary">Enter a notification sound</string>
     <string name="pref_notification_title">Notification sound</string>
     <string name="pref_notification_default">content://settings/system/notification_sound</string>
+    <!-- Preferences  -->
+                       
+    
     
     <string name="register_device_name">Device Name:</string>
     <string name="register_email">Email:</string>
@@ -51,9 +47,9 @@
     <string name="task_summary">Summary</string>
     <string name="task_description">Delete Task</string>
     
-    <string name="task_edit_department">Site Survey</string>
-    <string name="job_edit_summary">Location</string>
-    <string name="job_edit_description">Client</string>
+    <string name="job_detail_department">Site Survey</string>
+    <string name="job_detail_location">22 Anesta Street, Paradyskloof</string>
+    <string name="job_detail_client">Eugene van der Merwe</string>
     
     <string name="task_row_icon">Icon</string>
     <string name="task_row_department">Site Survey</string>

@@ -10,6 +10,8 @@ public class JobTable {
 	public static final String COLUMN_ID = "_id";
 	public static final String COLUMN_USERID = "userid";
 	public static final String COLUMN_CALENDAR_ID = "calendar_id";
+	public static final String COLUMN_START = "start";
+	public static final String COLUMN_END = "stop";
 	public static final String COLUMN_TICKET_ID = "ticket_id";
 	public static final String COLUMN_DEPARTMENT = "department";
 	public static final String COLUMN_COMPANYNAME = "companyname";
@@ -18,8 +20,7 @@ public class JobTable {
 	public static final String COLUMN_ADDRESS1 = "address1";
 	public static final String COLUMN_ADDRESS2 = "address2";
 	public static final String COLUMN_CITY = "city";
-	public static final String COLUMN_START = "start";
-	public static final String COLUMN_END = "stop";
+	public static final String COLUMN_EXTRA = "extra";
 	public static final String COLUMN_START_ACTUAL = "start_actual";
 	public static final String COLUMN_END_ACTUAL = "stop_actual";
 	// Status can be outstanding / started / paused / completed / cancelled / in progress
@@ -39,6 +40,7 @@ public class JobTable {
 			+ COLUMN_ADDRESS1 + " text not null,"
 			+ COLUMN_ADDRESS2 + " text not null,"
 			+ COLUMN_CITY + " text not null,"
+			+ COLUMN_EXTRA + " text,"
 			+ COLUMN_START + " int,"
 			+ COLUMN_END + " int,"
 			+ COLUMN_START_ACTUAL + " int,"

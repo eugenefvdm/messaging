@@ -49,7 +49,7 @@ public class JobListFragment extends ListFragment implements
 
 	private String mFilter;
 
-	private static final String TAG = "TasksFragment";
+	private static final String TAG = "ListFragment";
 	
 	public static JobListFragment newInstance(int num, String filter) {
 		JobListFragment f = new JobListFragment();
@@ -112,8 +112,7 @@ public class JobListFragment extends ListFragment implements
 	 * Note: Every time new fields are added the String[] has to be updated TODO
 	 * Find more elegant way of doing this, e.g. use global
 	 */
-	private void fillData(String filter) {
-		Log.v(TAG, "Filter specified is " + filter);
+	private void fillData(String filter) {		
 		// Fields from the database (projection) must include the _id column for
 		// the adapter to work
 		String[] from = new String[] {

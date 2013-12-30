@@ -15,8 +15,6 @@ package com.snowball;
 import static com.snowball.CommonUtilities.SENDER_ID;
 import static com.snowball.CommonUtilities.displayMessage;
 
-import java.util.ArrayList;
-
 import android.app.Notification;
 import android.app.Notification.InboxStyle;
 import android.app.NotificationManager;
@@ -29,7 +27,6 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.Build;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -43,13 +40,6 @@ public class GCMIntentService extends GCMBaseIntentService {
 	
 	private static final int NOTIFY_ME_ID=1337;
 	
-	private static int count = 0;
-	
-	/**
-	 * List of all messages received used by InboxStyle notification builder
-	 */
-	private static ArrayList<String> messages = new ArrayList<String>();
-	
     public GCMIntentService() {
         super(SENDER_ID);
     }
@@ -59,10 +49,9 @@ public class GCMIntentService extends GCMBaseIntentService {
      **/
     @Override
     protected void onRegistered(Context context, String registrationId) {
-        Log.i(TAG, "Device registered: regId = " + registrationId);
+        Log.i(TAG, "Device registered: regId = " + registrationId);                
+        ServerUtilities.register(context, registrationId);
         displayMessage(context, "Your device registered with Cloud Messaging");
-        Log.d(TAG, "Device name: " + Build.MODEL);
-        ServerUtilities.register(context, Build.MODEL, CommonUtilities.getDeviceAccounts(context), registrationId);
     }
 
     /**
@@ -86,8 +75,9 @@ public class GCMIntentService extends GCMBaseIntentService {
     	ContentValues values;
     	String messageType = "";
         String message = intent.getExtras().getString("price");
-        Log.i(TAG, "Received message '" + message + "' and now examining content...");
-        String department = null;        
+        //Log.i(TAG, "Received message '" + message + "' and now examining content...");
+        String department = null;
+        String extra = null;
 		// The AndroidHive demo return NULL first time you register so we handle it gracefully
         if (message == null) {
         	messageType = "First time registration! Welcome!";
@@ -97,6 +87,7 @@ public class GCMIntentService extends GCMBaseIntentService {
         	if (action != null) {
         		values = JobContentProvider.convertMessageToContentValues(action, message);
         		department = values.getAsString("department");
+        		extra = values.getAsString("extra");
         		if (action.equals("insert")) {
         			// Insert record and obtain ID for use in NotificationIntent
         			Uri jobUri = getContentResolver().insert(JobContentProvider.CONTENT_URI, values);
@@ -109,7 +100,8 @@ public class GCMIntentService extends GCMBaseIntentService {
         			dbRecordId = values.getAsInteger("calendar_id");
         			Uri todoUri = Uri.parse(JobContentProvider.CONTENT_URI + "/ticket" + "/" + dbRecordId);        			
         			getContentResolver().update(todoUri, values, null, null);
-        			messageType = "Updated " + department;
+        			//messageType = "Updated " + department;
+        			messageType = extra;
         		} else if (action.equals("delete")) {        			
         			dbRecordId = values.getAsInteger("calendar_id");
         			Log.d(TAG, "Action delete being executed on calendar_id " + String.valueOf(dbRecordId));
@@ -139,29 +131,34 @@ public class GCMIntentService extends GCMBaseIntentService {
     	
     	String title = context.getString(R.string.app_name);
     	
-    	Intent notificationIntent = new Intent(context, JobDetailActivity.class);
+    	// Old code commented out because we don't launch to JobDetailActivity any more
+    	//Intent notificationIntent = new Intent(context, JobDetailActivity.class);
+    	Intent notificationIntent = new Intent(context, MainActivity.class);
     	if (dbRecordId != 0) {
     		Uri jobUri = Uri.parse(JobContentProvider.CONTENT_URI + "/" + dbRecordId);
     		notificationIntent.putExtra(JobContentProvider.CONTENT_ITEM_TYPE, jobUri);
+    		// Indicate we're coming from GCMIntent
+    		//notificationIntent.putExtra("gcmTrue", "true");
     		Log.d(TAG, "Adding jobUri " + jobUri + " to intent");
     	}		
     	notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-    	
     	
     	PendingIntent contentIntent = PendingIntent.getActivity(context, dbRecordId, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
  
     	NotificationManager notificationManager = (NotificationManager) context
     	        .getSystemService(Context.NOTIFICATION_SERVICE);
-    	    	
-    	count++;
-    	messages.add(message);
+    	    	    	
+    	App.addMessage(message);   	
+    	
+    	int pendingNotificationsCount = App.getPendingNotificationsCount() + 1;
+        App.setPendingNotificationsCount(pendingNotificationsCount);
     	
     	String eventsSummary = "";
-    	if (count > 0) {
+    	if (pendingNotificationsCount > 0) {
     		//eventsSummary = Integer.toString(count) + " new events";
     		eventsSummary = "New events";
     	}
-
+    	
     	Resources resources = context.getResources();
     	Notification.Builder builder = new Notification.Builder(context);
     	builder.setContentIntent(contentIntent)    				
@@ -173,14 +170,15 @@ public class GCMIntentService extends GCMBaseIntentService {
     	       .setContentTitle(title)
     	       .setContentText(message)
     	       
-    	       .setNumber(count)
+    	       .setNumber(pendingNotificationsCount)
     	       .setSound(soundUri);
     	
     	// .setContentInfo(eventsSummary)
+    	// .setNumber(count)
     	       
     	InboxStyle inboxStyle = new Notification.InboxStyle(builder);
     	
-    	for (String m : messages) {
+    	for (String m : App.getMessages()) {
     		inboxStyle.addLine(m);
     	}
     	inboxStyle.setSummaryText(eventsSummary);

@@ -16,6 +16,7 @@ import com.snowball.R;
 import com.snowball.db.JobContentProvider;
 import com.snowball.db.JobTable;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContentValues;
@@ -55,19 +56,21 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 	private Button mBtnPause;
 	private Button mBtnCancel;
 	private Button mBtnDecline;
-	
+
+	// GPSTracker class
+	GPSTracker gps;
+
 	private Uri jobUri;
 
 	HTTPTask asyncTask;
-
-	AsyncTask<Void, Void, Void> mUpdateTask;
+	AsyncTask<Void, Void, Void> mUpdateJob;
 
 	private Cursor cursor;
-
 	private String mCalendarId;
 
-	// Member variables that are passed to map activity
-	private String mDepartment, mClient, mLocationName;
+	// Member variables that are passed to map activity and used to set activity
+	// title
+	private String mDepartment, mClient, mAddressSuburb, mCity;
 
 	String[] mProjection = {
 			JobTable.COLUMN_USERID, JobTable.COLUMN_CALENDAR_ID,
@@ -91,13 +94,10 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 		mBtnStart = (Button) findViewById(R.id.job_start_button);
 		mBtnEnd = (Button) findViewById(R.id.job_finish_button);
 		mBtnPause = (Button) findViewById(R.id.job_pause_button);
-		mBtnCancel= (Button) findViewById(R.id.job_cancel_button);
+		mBtnCancel = (Button) findViewById(R.id.job_cancel_button);
 		mBtnDecline = (Button) findViewById(R.id.job_decline_button);
 
-		getActionBar().setDisplayHomeAsUpEnabled(true);
-
 		Bundle extras = getIntent().getExtras();
-
 		if (bundle != null) {
 			// todoUri retrieved from saved instance
 			jobUri = (Uri) bundle.getParcelable(JobContentProvider.CONTENT_ITEM_TYPE);
@@ -106,21 +106,22 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 			jobUri = extras.getParcelable(JobContentProvider.CONTENT_ITEM_TYPE);
 			Log.d(TAG, "jobUri: " + jobUri);
 		}
-		
 		fillData(jobUri);
 
-		setTitle(mDepartment);
+		ActionBar ab = getActionBar();
+		ab.setDisplayHomeAsUpEnabled(true);
+		ab.setTitle(mDepartment);
+		ab.setSubtitle(mCity);
 
 		mBtnStart.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
 				String action;
 				long now = (System.currentTimeMillis()) / 1000L;
-				final String startTime = String.valueOf(now);				
-				
-				if (mBtnStart.getText().equals("Start")) {					
+				final String startTime = String.valueOf(now);
+				if (mBtnStart.getText().equals("Start")) {
 					Date d = new Date(now * 1000);
 					mTxtStartText.setText(DateFormat.format("dd/MM hh:mm", d));
-					ContentValues values = new ContentValues();					
+					ContentValues values = new ContentValues();
 					values.put(JobTable.COLUMN_STATUS, "started");
 					values.put(JobTable.COLUMN_START_ACTUAL, startTime);
 					getContentResolver().update(jobUri, values, null, null);
@@ -128,20 +129,20 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 				} else {
 					action = "resume";
 				}
-				serverAction(action, startTime, null);				
+				serverAction(action, startTime, null);
 				setButtonStatus("started");
 			}
 		});
-		
+
 		mBtnPause.setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {				
+			public void onClick(View v) {
 				long now = (System.currentTimeMillis()) / 1000L;
 				final String endTime = String.valueOf(now);
 
-				ContentValues values = new ContentValues();				
+				ContentValues values = new ContentValues();
 				values.put(JobTable.COLUMN_STATUS, "paused");
 				getContentResolver().update(jobUri, values, null, null);
-				
+
 				serverAction("pause", endTime, null);
 				setButtonStatus("paused");
 			}
@@ -151,60 +152,54 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 			public void onClick(View v) {
 				long now = (System.currentTimeMillis()) / 1000L;
 				final String endTime = String.valueOf(now);
-				
+
 				Date d = new Date(now * 1000);
-				mTxtStopText.setText(DateFormat.format("dd/MM hh:mm", d));				
+				mTxtStopText.setText(DateFormat.format("dd/MM hh:mm", d));
 				ContentValues values = new ContentValues();
 				values.put(JobTable.COLUMN_END_ACTUAL, now);
 				values.put(JobTable.COLUMN_STATUS, "completed");
 				getContentResolver().update(jobUri, values, null, null);
-				
+
 				serverAction("end", endTime, null);
 				setButtonStatus("completed");
 			}
 		});
-		
+
 		mBtnCancel.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
 				final EditText input = new EditText(JobDetailActivity.this);
-				new AlertDialog.Builder(JobDetailActivity.this)
-			    .setTitle("Enter Cancel Reason")			    
-			    .setView(input)
-			    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-			        public void onClick(DialogInterface dialog, int whichButton) {
-			            String reason = input.getText().toString();
-			            serverAction("cancel", reason, "06/01/2014");
-			            //setButtonStatus("cancelled");
-			        }
-			    }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-			        public void onClick(DialogInterface dialog, int whichButton) {
-			            // Do nothing.
-			        }
-			    }).show();
+				new AlertDialog.Builder(JobDetailActivity.this).setTitle("Enter Cancel Reason").setView(input).setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int whichButton) {
+						String reason = input.getText().toString();
+						serverAction("cancel", reason, "");
+						// setButtonStatus("cancelled");
+					}
+				}).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int whichButton) {
+						// Do nothing.
+					}
+				}).show();
 			}
-		});		
-		
+		});
+
 		mBtnDecline.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
 				final EditText input = new EditText(JobDetailActivity.this);
-				new AlertDialog.Builder(JobDetailActivity.this)
-			    .setTitle("Enter Decline Reason")			    
-			    .setView(input)
-			    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-			        public void onClick(DialogInterface dialog, int whichButton) {
-			            String reason = input.getText().toString();
-			            serverAction("decline", reason, "06/01/2014");
-			            //setButtonStatus("declined");
-			        }
-			    }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-			        public void onClick(DialogInterface dialog, int whichButton) {
-			            // Do nothing.
-			        }
-			    }).show();
+				new AlertDialog.Builder(JobDetailActivity.this).setTitle("Enter Decline Reason").setView(input).setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int whichButton) {
+						String reason = input.getText().toString();
+						serverAction("decline", reason, "");
+						// setButtonStatus("declined");
+					}
+				}).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int whichButton) {
+						// Do nothing.
+					}
+				}).show();
 			}
-		});		
+		});
 	}
-	
+
 	private void setButtonStatus(String status) {
 		if (status.equals("outstanding")) {
 			mBtnStart.setEnabled(true);
@@ -215,13 +210,15 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 			mBtnStart.setEnabled(false);
 			mBtnPause.setEnabled(true);
 			mBtnEnd.setEnabled(true);
+			mBtnCancel.setEnabled(false);
 			mBtnDecline.setEnabled(false);
 		} else if (status.equals("paused")) {
 			mBtnStart.setText("Resume");
 			mBtnStart.setEnabled(true);
 			mBtnPause.setEnabled(false);
 			mBtnEnd.setEnabled(false);
-			mBtnDecline.setEnabled(true);
+			mBtnCancel.setEnabled(false);
+			mBtnDecline.setEnabled(false);
 		} else if (status.equals("completed")) {
 			mBtnStart.setEnabled(false);
 			mBtnPause.setEnabled(false);
@@ -234,28 +231,63 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 			mBtnDecline.setEnabled(false);
 		}
 	}
-	
+
+//	private String getCurrentLocation() {
+//		gps = new GPSTracker(JobDetailActivity.this);
+//		// check if GPS enabled
+//		if (gps.canGetLocation()) {
+//			double latitude = gps.getLatitude();
+//			double longitude = gps.getLongitude();
+//			String message = "GPS Location is - \nLat: " + latitude + "\nLong: " + longitude;
+//			Log.w(TAG, message);
+//			return ("GPS:" + latitude + "," + longitude);
+//		} else {
+//			Log.e(TAG, "Can't get location, GPS or Network is not enabled");
+//			// Ask user to enable GPS/network in settings
+//			gps.showSettingsAlert();
+//			return null;
+//		}
+//	}
+
 	/**
 	 * Post a message to the server for this calendar ID
 	 * 
 	 * @param action
 	 * @param value
-	 * @param extra Optional parameter used by decline
+	 * @param extra
+	 *            Optional parameter used by decline
 	 */
 	private void serverAction(String action, String value, String extra) {
 		ArrayList<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(3);
 		nameValuePairs.add(new BasicNameValuePair("calendar_id", mCalendarId));
-		nameValuePairs.add(new BasicNameValuePair("action", action));		
+		nameValuePairs.add(new BasicNameValuePair("action", action));
 		nameValuePairs.add(new BasicNameValuePair("value", value));
+
+		gps = new GPSTracker(JobDetailActivity.this);
+		// check if GPS enabled
+		if (gps.canGetLocation()) {
+			double lat = gps.getLatitude();
+			double lng = gps.getLongitude();
+			String message = "GPS Location is - \nLat: " + lat + "\nLong: " + lng;
+			Log.w(TAG, message);			
+			nameValuePairs.add(new BasicNameValuePair("lat", String.valueOf(lat)));
+			nameValuePairs.add(new BasicNameValuePair("lng", String.valueOf(lng)));
+		} else {
+			Log.e(TAG, "Can't get location, GPS or Network is not enabled");
+			// Ask user to enable GPS/network in settings
+			gps.showSettingsAlert();
+		}
+
 		if (extra != null) {
-			nameValuePairs.add(new BasicNameValuePair("extra", extra));	
-		}		
+			nameValuePairs.add(new BasicNameValuePair("extra", extra));
+		}
 		doAsyncTask(nameValuePairs);
 	}
-// I had problems with this optional parameters working	
-//	private void serverAction(String action, String value) {
-//		serverAction(action, value);
-//	}
+
+	// I had problems with this optional parameters working
+	// private void serverAction(String action, String value) {
+	// serverAction(action, value);
+	// }
 
 	@SuppressWarnings("unchecked")
 	private void doAsyncTask(ArrayList<NameValuePair> nameValuePairs) {
@@ -287,7 +319,7 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 	private void showMap() {
 		List<Address> foundGeocode = null;
 		try {
-			foundGeocode = new Geocoder(this).getFromLocationName(mLocationName, 1);
+			foundGeocode = new Geocoder(this).getFromLocationName(mAddressSuburb, 1);
 			double lat = foundGeocode.get(0).getLatitude();
 			double lng = foundGeocode.get(0).getLongitude();
 			Log.d(TAG, "lat" + Double.valueOf(lat));
@@ -295,13 +327,13 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 			Intent i = new Intent(this, MapPane.class);
 			i.putExtra("department", mDepartment);
 			i.putExtra("client", mClient);
-			i.putExtra("address", mLocationName);
+			i.putExtra("address", mAddressSuburb);
 			i.putExtra("lat", lat);
 			i.putExtra("lng", lng);
 			startActivity(i);
 		} catch (IOException e) {
 			Log.e(TAG, "GPS problem or activity could not be started");
-			Toast.makeText(this, "Cannot determine GPS for " + mLocationName, Toast.LENGTH_SHORT).show();
+			Toast.makeText(this, "Cannot determine GPS for " + mAddressSuburb, Toast.LENGTH_SHORT).show();
 			e.printStackTrace();
 		}
 	}
@@ -315,18 +347,18 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 			mClient = cursor.getString(cursor.getColumnIndexOrThrow(JobTable.COLUMN_CLIENT_NAME));
 			String address1 = cursor.getString(cursor.getColumnIndexOrThrow(JobTable.COLUMN_ADDRESS1));
 			String address2 = cursor.getString(cursor.getColumnIndexOrThrow(JobTable.COLUMN_ADDRESS2));
-			String city = cursor.getString(cursor.getColumnIndexOrThrow(JobTable.COLUMN_CITY));
-			mLocationName = address1 + ", " + address2 + ", " + city;
+			mAddressSuburb = address1 + ", " + address2;
+			mCity = cursor.getString(cursor.getColumnIndexOrThrow(JobTable.COLUMN_CITY));
 			String status = cursor.getString(cursor.getColumnIndexOrThrow(JobTable.COLUMN_STATUS));
 			setButtonStatus(status);
-			mTxtLocationText.setText(mLocationName);
+			mTxtLocationText.setText(mAddressSuburb);
 			mTxtClientText.setText(mClient);
 			// Obtain Unix time from stored database field and display real date
 			long unixTime = cursor.getLong(cursor.getColumnIndexOrThrow(JobTable.COLUMN_START_ACTUAL));
 			if (unixTime != 0) {
 				Date d = new Date(unixTime * 1000);
-				mTxtStartText.setText(DateFormat.format("dd/MM hh:mm", d));	
-			}			
+				mTxtStartText.setText(DateFormat.format("dd/MM hh:mm", d));
+			}
 			cursor.close();
 		}
 	}
