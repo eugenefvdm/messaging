@@ -5,7 +5,6 @@
 
 package com.snowball;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -13,8 +12,8 @@ import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
 import com.snowball.R;
-import com.snowball.db.JobContentProvider;
-import com.snowball.db.JobTable;
+import com.snowball.db.JobsContentProvider;
+import com.snowball.db.JobsTable;
 
 import android.app.ActionBar;
 import android.app.Activity;
@@ -34,8 +33,10 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -47,6 +48,8 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 	private static final String TAG = "DetailActivity";
 	private TextView mTxtLocationText;
 	private TextView mTxtClientText;
+	
+	private ListView mNotesList;
 
 	private TextView mTxtStartText;
 	private TextView mTxtStopText;
@@ -56,6 +59,8 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 	private Button mBtnPause;
 	private Button mBtnCancel;
 	private Button mBtnDecline;
+	
+	private ArrayList<String> mNotes = new ArrayList<String>();
 
 	// GPSTracker class
 	GPSTracker gps;
@@ -73,20 +78,23 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 	private String mDepartment, mClient, mAddressSuburb, mCity;
 
 	String[] mProjection = {
-			JobTable.COLUMN_USERID, JobTable.COLUMN_CALENDAR_ID,
-			JobTable.COLUMN_TICKET_ID, JobTable.COLUMN_CLIENT_NAME,
-			JobTable.COLUMN_ADDRESS1, JobTable.COLUMN_ADDRESS2,
-			JobTable.COLUMN_CITY, JobTable.COLUMN_DEPARTMENT,
-			JobTable.COLUMN_START_ACTUAL, JobTable.COLUMN_END_ACTUAL,
-			JobTable.COLUMN_STATUS };
+			JobsTable.COLUMN_CLIENT_ID, JobsTable.COLUMN_CALENDAR_ID,
+			JobsTable.COLUMN_TICKET_ID, JobsTable.COLUMN_CLIENT_NAME,
+			JobsTable.COLUMN_ADDRESS1, JobsTable.COLUMN_ADDRESS2,
+			JobsTable.COLUMN_CITY, JobsTable.COLUMN_DEPARTMENT,
+			JobsTable.COLUMN_START_ACTUAL, JobsTable.COLUMN_END_ACTUAL,
+			JobsTable.COLUMN_STATUS };
 
 	@Override
 	protected void onCreate(Bundle bundle) {
 		super.onCreate(bundle);
+		
 		setContentView(R.layout.job_detail);
 
 		mTxtLocationText = (TextView) findViewById(R.id.job_location);
 		mTxtClientText = (TextView) findViewById(R.id.job_client);
+		
+		mNotesList = (ListView) findViewById(R.id.notes_list);
 
 		mTxtStartText = (TextView) findViewById(R.id.job_edit_start_text);
 		mTxtStopText = (TextView) findViewById(R.id.job_edit_stop_text);
@@ -100,10 +108,10 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 		Bundle extras = getIntent().getExtras();
 		if (bundle != null) {
 			// todoUri retrieved from saved instance
-			jobUri = (Uri) bundle.getParcelable(JobContentProvider.CONTENT_ITEM_TYPE);
+			jobUri = (Uri) bundle.getParcelable(JobsContentProvider.CONTENT_ITEM_TYPE);
 		} else {
 			// todoUri passed from the list activity or the intent service
-			jobUri = extras.getParcelable(JobContentProvider.CONTENT_ITEM_TYPE);
+			jobUri = extras.getParcelable(JobsContentProvider.CONTENT_ITEM_TYPE);
 			Log.d(TAG, "jobUri: " + jobUri);
 		}
 		fillData(jobUri);
@@ -122,8 +130,8 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 					Date d = new Date(now * 1000);
 					mTxtStartText.setText(DateFormat.format("dd/MM hh:mm", d));
 					ContentValues values = new ContentValues();
-					values.put(JobTable.COLUMN_STATUS, "started");
-					values.put(JobTable.COLUMN_START_ACTUAL, startTime);
+					values.put(JobsTable.COLUMN_STATUS, "started");
+					values.put(JobsTable.COLUMN_START_ACTUAL, startTime);
 					getContentResolver().update(jobUri, values, null, null);
 					action = "start";
 				} else {
@@ -140,7 +148,7 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 				final String endTime = String.valueOf(now);
 
 				ContentValues values = new ContentValues();
-				values.put(JobTable.COLUMN_STATUS, "paused");
+				values.put(JobsTable.COLUMN_STATUS, "paused");
 				getContentResolver().update(jobUri, values, null, null);
 
 				serverAction("pause", endTime, null);
@@ -156,8 +164,8 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 				Date d = new Date(now * 1000);
 				mTxtStopText.setText(DateFormat.format("dd/MM hh:mm", d));
 				ContentValues values = new ContentValues();
-				values.put(JobTable.COLUMN_END_ACTUAL, now);
-				values.put(JobTable.COLUMN_STATUS, "completed");
+				values.put(JobsTable.COLUMN_END_ACTUAL, now);
+				values.put(JobsTable.COLUMN_STATUS, "completed");
 				getContentResolver().update(jobUri, values, null, null);
 
 				serverAction("end", endTime, null);
@@ -255,7 +263,7 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 	 * @param action
 	 * @param value
 	 * @param extra
-	 *            Optional parameter used by decline
+	 *            Optional parameter used when declining or canceling a job
 	 */
 	private void serverAction(String action, String value, String extra) {
 		ArrayList<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(3);
@@ -291,7 +299,7 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 
 	@SuppressWarnings("unchecked")
 	private void doAsyncTask(ArrayList<NameValuePair> nameValuePairs) {
-		asyncTask = new HTTPTask();
+		asyncTask = new HTTPTask(this);
 		asyncTask.delegate = JobDetailActivity.this;
 		asyncTask.execute(nameValuePairs);
 	}
@@ -316,10 +324,19 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 		}
 	}
 
+	/**
+	 * Look up address and start map activity
+	 * 
+	 * It appears Geocoder doesn't always work properly, see Stack Overflow
+	 * 
+	 * http://developer.android.com/reference/android/location/Geocoder.html#getFromLocationName(java.lang.String, int, double, double, double, double)
+	 * Note: "It may be useful to call this method from a thread separate from your primary UI thread"
+	 */
 	private void showMap() {
 		List<Address> foundGeocode = null;
 		try {
 			foundGeocode = new Geocoder(this).getFromLocationName(mAddressSuburb, 1);
+			//foundGeocode = new Geocoder(this).getFromLocationName("22 Anesta Street, Stellenbosch, South Africa", 1);
 			double lat = foundGeocode.get(0).getLatitude();
 			double lng = foundGeocode.get(0).getLongitude();
 			Log.d(TAG, "lat" + Double.valueOf(lat));
@@ -331,7 +348,8 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 			i.putExtra("lat", lat);
 			i.putExtra("lng", lng);
 			startActivity(i);
-		} catch (IOException e) {
+		//} catch (IOException e) {
+		} catch (Exception e) {
 			Log.e(TAG, "GPS problem or activity could not be started");
 			Toast.makeText(this, "Cannot determine GPS for " + mAddressSuburb, Toast.LENGTH_SHORT).show();
 			e.printStackTrace();
@@ -342,31 +360,62 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 		cursor = getContentResolver().query(uri, mProjection, null, null, null);
 		if (cursor != null) {
 			cursor.moveToFirst();
-			mCalendarId = cursor.getString(cursor.getColumnIndexOrThrow(JobTable.COLUMN_CALENDAR_ID));
-			mDepartment = cursor.getString(cursor.getColumnIndexOrThrow(JobTable.COLUMN_DEPARTMENT));
-			mClient = cursor.getString(cursor.getColumnIndexOrThrow(JobTable.COLUMN_CLIENT_NAME));
-			String address1 = cursor.getString(cursor.getColumnIndexOrThrow(JobTable.COLUMN_ADDRESS1));
-			String address2 = cursor.getString(cursor.getColumnIndexOrThrow(JobTable.COLUMN_ADDRESS2));
+			Long ticketId = cursor.getLong(cursor.getColumnIndexOrThrow(JobsTable.COLUMN_TICKET_ID));
+			mCalendarId = cursor.getString(cursor.getColumnIndexOrThrow(JobsTable.COLUMN_CALENDAR_ID));
+			mDepartment = cursor.getString(cursor.getColumnIndexOrThrow(JobsTable.COLUMN_DEPARTMENT));
+			mClient = cursor.getString(cursor.getColumnIndexOrThrow(JobsTable.COLUMN_CLIENT_NAME));
+			String address1 = cursor.getString(cursor.getColumnIndexOrThrow(JobsTable.COLUMN_ADDRESS1));
+			String address2 = cursor.getString(cursor.getColumnIndexOrThrow(JobsTable.COLUMN_ADDRESS2));
 			mAddressSuburb = address1 + ", " + address2;
-			mCity = cursor.getString(cursor.getColumnIndexOrThrow(JobTable.COLUMN_CITY));
-			String status = cursor.getString(cursor.getColumnIndexOrThrow(JobTable.COLUMN_STATUS));
+			mCity = cursor.getString(cursor.getColumnIndexOrThrow(JobsTable.COLUMN_CITY));
+			String status = cursor.getString(cursor.getColumnIndexOrThrow(JobsTable.COLUMN_STATUS));
 			setButtonStatus(status);
 			mTxtLocationText.setText(mAddressSuburb);
 			mTxtClientText.setText(mClient);
 			// Obtain Unix time from stored database field and display real date
-			long unixTime = cursor.getLong(cursor.getColumnIndexOrThrow(JobTable.COLUMN_START_ACTUAL));
+			long unixTime = cursor.getLong(cursor.getColumnIndexOrThrow(JobsTable.COLUMN_START_ACTUAL));
 			if (unixTime != 0) {
 				Date d = new Date(unixTime * 1000);
 				mTxtStartText.setText(DateFormat.format("dd/MM hh:mm", d));
 			}
+			Uri notesUri = Uri.parse(JobsContentProvider.CONTENT_URI_NOTES + "/" + ticketId);
+			Log.w(TAG, "notesUri: " + notesUri);			
 			cursor.close();
-		}
+			String[] projection2 = { JobsTable.COLUMN_NOTE_MESSAGE }; 
+			Cursor cursor2 = getContentResolver().query(notesUri, projection2, null, null, null);
+			if (cursor2 != null) {
+				cursor2.moveToFirst();
+				while(!cursor2.isAfterLast()) {
+					mNotes.add(cursor2.getString(cursor2.getColumnIndexOrThrow(JobsTable.COLUMN_NOTE_MESSAGE)));
+					cursor2.moveToNext();
+				}
+				mNotesList.setAdapter(new ArrayAdapter<String>(this,
+		                R.layout.notes_list_row, mNotes));
+				//String message = cursor2.getString(cursor2.getColumnIndexOrThrow(JobsTable.COLUMN_NOTE_MESSAGE));
+				//Log.w(TAG, "Message for this job: " + message);
+				
+			} else {
+				Log.d(TAG, "There was no message for this job");
+			}
+			cursor2.close();
+		}		
+	}
+	
+	/**
+	 * Populate notes
+	 * 
+	 * Based on the job ID, get the ticket ID. Then based on the ticket ID, get notes
+	 * 
+	 * @param uri
+	 */
+	private void fillNotes(Uri uri) {
+		String jobId = uri.getLastPathSegment();
 	}
 
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 		// saveState();
-		outState.putParcelable(JobContentProvider.CONTENT_ITEM_TYPE, jobUri);
+		outState.putParcelable(JobsContentProvider.CONTENT_ITEM_TYPE, jobUri);
 	}
 
 	@Override

@@ -77,7 +77,10 @@ public class PrefsFragment extends PreferenceFragment implements
 		if ("pref_key_server_url".equals(key)) {			
 			Log.d(TAG, "Checking if Server URL is valid...");
 		}
+		Log.d(TAG, "setting setPreferencesSummaries...");
 		setPreferenceSummaries(findPreference(key));
+		Log.d(TAG, "...done setting setPreferencesSummaries");
+		
 	}
 
 	/**

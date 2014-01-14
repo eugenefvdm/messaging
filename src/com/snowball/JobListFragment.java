@@ -32,13 +32,15 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
 import com.snowball.R;
-import com.snowball.db.JobContentProvider;
-import com.snowball.db.JobTable;
+import com.snowball.db.JobsContentProvider;
+import com.snowball.db.JobsTable;
 
 public class JobListFragment extends ListFragment implements
 		LoaderManager.LoaderCallbacks<Cursor> {
 	
 	private static final int CALL_CLIENT_ID = Menu.FIRST;
+	
+	private static final int DELETE_ID = Menu.FIRST + 1;
 
 	private SimpleCursorAdapter adapter;
 
@@ -71,7 +73,7 @@ public class JobListFragment extends ListFragment implements
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		ctx = getActivity();
-		View rootView = inflater.inflate(R.layout.fragment_tasks, container, false);		
+		View rootView = inflater.inflate(R.layout.fragment_job_list, container, false);		
 		return rootView;
 	}
 
@@ -88,18 +90,18 @@ public class JobListFragment extends ListFragment implements
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
 		Intent i = new Intent(ctx, JobDetailActivity.class);
-		Uri jobUri = Uri.parse(JobContentProvider.CONTENT_URI + "/" + id);
+		Uri jobUri = Uri.parse(JobsContentProvider.CONTENT_URI_JOBS + "/" + id);
 		Log.d(TAG, "List item Uri clicked: " + jobUri);
-		i.putExtra(JobContentProvider.CONTENT_ITEM_TYPE, jobUri);
+		i.putExtra(JobsContentProvider.CONTENT_ITEM_TYPE, jobUri);
 		startActivity(i);
 	}
 
 	private String getPhonenumber(Uri uri) {
-		String[] projection = { JobTable.COLUMN_PHONENUMBER };
+		String[] projection = { JobsTable.COLUMN_PHONENUMBER };
 		Cursor cursor = ctx.getContentResolver().query(uri, projection, null, null, null);
 		if (cursor != null) {
 			cursor.moveToFirst();
-			String phonenumber = cursor.getString(cursor.getColumnIndexOrThrow(JobTable.COLUMN_PHONENUMBER));
+			String phonenumber = cursor.getString(cursor.getColumnIndexOrThrow(JobsTable.COLUMN_PHONENUMBER));
 			cursor.close();
 			return phonenumber;
 		}
@@ -116,8 +118,8 @@ public class JobListFragment extends ListFragment implements
 		// Fields from the database (projection) must include the _id column for
 		// the adapter to work
 		String[] from = new String[] {
-				JobTable.COLUMN_DEPARTMENT, JobTable.COLUMN_CITY,
-				JobTable.COLUMN_CLIENT_NAME, JobTable.COLUMN_START };
+				JobsTable.COLUMN_DEPARTMENT, JobsTable.COLUMN_CITY,
+				JobsTable.COLUMN_CLIENT_NAME, JobsTable.COLUMN_START };
 		// Fields on the UI to which we map
 		int[] to = new int[] {
 				R.id.department, R.id.start, R.id.city, R.id.client_name };
@@ -131,12 +133,12 @@ public class JobListFragment extends ListFragment implements
 	@Override
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 		String[] projection = {
-				JobTable.COLUMN_ID, JobTable.COLUMN_DEPARTMENT,
-				JobTable.COLUMN_CITY, JobTable.COLUMN_CLIENT_NAME,
-				JobTable.COLUMN_START };
+				JobsTable.COLUMN_ID, JobsTable.COLUMN_DEPARTMENT,
+				JobsTable.COLUMN_CITY, JobsTable.COLUMN_CLIENT_NAME,
+				JobsTable.COLUMN_START };
 		String selection = "status != ?";
 		String[] selectionArgs = { mFilter };
-		CursorLoader cursorLoader = new CursorLoader(ctx, JobContentProvider.CONTENT_URI, projection, selection, selectionArgs, null);
+		CursorLoader cursorLoader = new CursorLoader(ctx, JobsContentProvider.CONTENT_URI_JOBS, projection, selection, selectionArgs, null);
 		return cursorLoader;
 	}
 
@@ -162,10 +164,10 @@ public class JobListFragment extends ListFragment implements
 
 		@Override
 		public void bindView(View view, Context context, Cursor cursor) {
-			String department = cursor.getString(cursor.getColumnIndex(JobTable.COLUMN_DEPARTMENT));			
-			String city = cursor.getString(cursor.getColumnIndex(JobTable.COLUMN_CITY));
-			String client_name = cursor.getString(cursor.getColumnIndex(JobTable.COLUMN_CLIENT_NAME));
-			long unixStart = cursor.getLong(cursor.getColumnIndex(JobTable.COLUMN_START));
+			String department = cursor.getString(cursor.getColumnIndex(JobsTable.COLUMN_DEPARTMENT));			
+			String city = cursor.getString(cursor.getColumnIndex(JobsTable.COLUMN_CITY));
+			String client_name = cursor.getString(cursor.getColumnIndex(JobsTable.COLUMN_CLIENT_NAME));
+			long unixStart = cursor.getLong(cursor.getColumnIndex(JobsTable.COLUMN_START));
 			Date d = new Date(unixStart * 1000);
 			TextView tv1 = (TextView) view.findViewById(R.id.start);
 			tv1.setText(DateFormat.format("E d hh:mm", d));
@@ -182,16 +184,25 @@ public class JobListFragment extends ListFragment implements
 	public void onCreateContextMenu(ContextMenu menu, View v,
 			ContextMenuInfo menuInfo) {
 		super.onCreateContextMenu(menu, v, menuInfo);
+		menu.add(0, DELETE_ID, 0, R.string.context_menu_list_delete);
 		menu.add(0, CALL_CLIENT_ID, 0, R.string.context_menu_list_call);
 	}
 
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
+		case DELETE_ID:
+		      AdapterContextMenuInfo info1 = (AdapterContextMenuInfo) item
+		          .getMenuInfo();
+		      Uri uri1 = Uri.parse(JobsContentProvider.CONTENT_URI_JOBS + "/"
+		          + info1.id);
+		      ctx.getContentResolver().delete(uri1, null, null);
+		      fillData(mFilter);
+		      return true;		    
 		case CALL_CLIENT_ID:
-			AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
-			Uri uri = Uri.parse(JobContentProvider.CONTENT_URI + "/" + info.id);
-			String phonenumber = getPhonenumber(uri);
+			AdapterContextMenuInfo info2 = (AdapterContextMenuInfo) item.getMenuInfo();
+			Uri uri2 = Uri.parse(JobsContentProvider.CONTENT_URI_JOBS + "/" + info2.id);
+			String phonenumber = getPhonenumber(uri2);
 			Log.i(TAG, "Calling " + phonenumber);
 			Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + phonenumber));
 			startActivity(intent);

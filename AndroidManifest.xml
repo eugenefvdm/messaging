@@ -6,7 +6,7 @@
 
     <!-- GCM requires Android SDK version 2.2 (API level 8) or above. -->
     <uses-sdk
-        android:minSdkVersion="17"
+        android:minSdkVersion="16"
         android:targetSdkVersion="19" />
 
     <!-- OpenGL ES version 2 used by Google Maps API -->
@@ -89,13 +89,13 @@
         </activity>
 
         <provider
-            android:name="com.snowball.db.JobContentProvider"
+            android:name="com.snowball.db.JobsContentProvider"
             android:authorities="com.snowball"
             android:exported="false" >
         </provider>
 
         <receiver
-            android:name="com.google.android.gcm.GCMBroadcastReceiver"
+            android:name="com.snowball.gcm.GCMBroadcastReceiver"            
             android:permission="com.google.android.c2dm.permission.SEND" >
             <intent-filter>
 

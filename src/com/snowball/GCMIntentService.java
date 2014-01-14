@@ -15,6 +15,11 @@ package com.snowball;
 import static com.snowball.CommonUtilities.SENDER_ID;
 import static com.snowball.CommonUtilities.displayMessage;
 
+import java.util.ArrayList;
+
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
+
 import android.app.Notification;
 import android.app.Notification.InboxStyle;
 import android.app.NotificationManager;
@@ -27,18 +32,24 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.preference.PreferenceManager;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 
-import com.google.android.gcm.GCMBaseIntentService;
+import com.snowball.gcm.GCMBaseIntentService;
 import com.snowball.R;
-import com.snowball.db.JobContentProvider;
+import com.snowball.db.JobsContentProvider;
 
-public class GCMIntentService extends GCMBaseIntentService {
+public class GCMIntentService extends GCMBaseIntentService implements AsyncResponse {
 
 	private static final String TAG = "GCMIntentService";
 	
 	private static final int NOTIFY_ME_ID=1337;
+	
+	HTTPTask asyncTask;
+
+	private Context mContext;
 	
     public GCMIntentService() {
         super(SENDER_ID);
@@ -49,10 +60,38 @@ public class GCMIntentService extends GCMBaseIntentService {
      **/
     @Override
     protected void onRegistered(Context context, String registrationId) {
-        Log.i(TAG, "Device registered: regId = " + registrationId);                
-        ServerUtilities.register(context, registrationId);
-        displayMessage(context, "Your device registered with Cloud Messaging");
+    	mContext = context;
+        Log.i(TAG, "Device registered: regId = " + registrationId);
+        
+        ArrayList<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(4);
+		nameValuePairs.add(new BasicNameValuePair("action", "register"));
+		nameValuePairs.add(new BasicNameValuePair("regId", registrationId));				
+		nameValuePairs.add(new BasicNameValuePair("name", Build.MODEL));
+		String firstEmailAccount = CommonUtilities.getDeviceAccounts(this);
+		nameValuePairs.add(new BasicNameValuePair("email", firstEmailAccount));
+		TelephonyManager telephonyManager;
+		telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+		nameValuePairs.add(new BasicNameValuePair("device_id", telephonyManager.getDeviceId()));
+		doAsyncTask(nameValuePairs);
+        
+        
+        //ServerUtilities.register(context, registrationId);
+        //displayMessage(context, "Your device registered with Cloud Messaging");
     }
+    
+    @SuppressWarnings("unchecked")
+	private void doAsyncTask(ArrayList<NameValuePair> nameValuePairs) {
+		asyncTask = new HTTPTask(this);
+		asyncTask.delegate = GCMIntentService.this;
+		asyncTask.execute(nameValuePairs);
+	}
+	
+	@Override
+	public void asyncProcessFinish(String output) {
+		//displayMessage(mContext, "Your device registered with Cloud Messaging");
+		displayMessage(mContext, output);
+		//Toast.makeText(MainActivity.this, output, Toast.LENGTH_SHORT).show();
+	}
 
     /**
      * Method called on device unregistered
@@ -60,8 +99,9 @@ public class GCMIntentService extends GCMBaseIntentService {
     @Override
     protected void onUnregistered(Context context, String registrationId) {
         Log.i(TAG, "Device unregistered");
-        displayMessage(context, getString(R.string.gcm_unregistered));
-        ServerUtilities.unregister(context, registrationId);
+        displayMessage(context, getString(R.string.gcm_unregistered));        
+        String firstEmailAccount = CommonUtilities.getDeviceAccounts(this);		       
+        ServerUtilities.unregister(context, registrationId, firstEmailAccount);
     }
 
     /**
@@ -75,7 +115,7 @@ public class GCMIntentService extends GCMBaseIntentService {
     	ContentValues values;
     	String messageType = "";
         String message = intent.getExtras().getString("price");
-        //Log.i(TAG, "Received message '" + message + "' and now examining content...");
+        Log.i(TAG, "Received message '" + message + "' and now examining content...");
         String department = null;
         String extra = null;
 		// The AndroidHive demo return NULL first time you register so we handle it gracefully
@@ -83,14 +123,14 @@ public class GCMIntentService extends GCMBaseIntentService {
         	messageType = "First time registration! Welcome!";
         	Log.e(TAG, "Message is NULL!");
         } else {
-        	String action = JobContentProvider.getAction(message);
+        	String action = JobsContentProvider.getAction(message);
         	if (action != null) {
-        		values = JobContentProvider.convertMessageToContentValues(action, message);
+        		values = JobsContentProvider.convertMessageToContentValues(action, message);
         		department = values.getAsString("department");
         		extra = values.getAsString("extra");
         		if (action.equals("insert")) {
         			// Insert record and obtain ID for use in NotificationIntent
-        			Uri jobUri = getContentResolver().insert(JobContentProvider.CONTENT_URI, values);
+        			Uri jobUri = getContentResolver().insert(JobsContentProvider.CONTENT_URI_JOBS, values);
         			long newDbRecord = ContentUris.parseId(jobUri);
         			// Convert long to int because Pending Intent Request Codes need to be integer
         			dbRecordId = (int) newDbRecord;
@@ -98,14 +138,17 @@ public class GCMIntentService extends GCMBaseIntentService {
         			messageType = "New " + department;
         		} else if (action.equals("update")) {
         			dbRecordId = values.getAsInteger("calendar_id");
-        			Uri todoUri = Uri.parse(JobContentProvider.CONTENT_URI + "/ticket" + "/" + dbRecordId);        			
+        			Uri todoUri = Uri.parse(JobsContentProvider.CONTENT_URI_JOBS + "/ticket" + "/" + dbRecordId);        			
         			getContentResolver().update(todoUri, values, null, null);
-        			//messageType = "Updated " + department;
+        			// Update notes (for now, insert)
+        			ContentValues values2 = JobsContentProvider.getNotes(action, message);
+        			getContentResolver().insert(JobsContentProvider.CONTENT_URI_NOTES, values2);
+        			
         			messageType = extra;
         		} else if (action.equals("delete")) {        			
         			dbRecordId = values.getAsInteger("calendar_id");
         			Log.d(TAG, "Action delete being executed on calendar_id " + String.valueOf(dbRecordId));
-        			Uri todoUri = Uri.parse(JobContentProvider.CONTENT_URI + "/ticket" + "/" + dbRecordId);        			
+        			Uri todoUri = Uri.parse(JobsContentProvider.CONTENT_URI_JOBS + "/ticket" + "/" + dbRecordId);        			
         			getContentResolver().delete(todoUri, null, null);
         			//messageType = "Deleted " + department;
         			messageType = "Deleted item";
@@ -135,8 +178,8 @@ public class GCMIntentService extends GCMBaseIntentService {
     	//Intent notificationIntent = new Intent(context, JobDetailActivity.class);
     	Intent notificationIntent = new Intent(context, MainActivity.class);
     	if (dbRecordId != 0) {
-    		Uri jobUri = Uri.parse(JobContentProvider.CONTENT_URI + "/" + dbRecordId);
-    		notificationIntent.putExtra(JobContentProvider.CONTENT_ITEM_TYPE, jobUri);
+    		Uri jobUri = Uri.parse(JobsContentProvider.CONTENT_URI_JOBS + "/" + dbRecordId);
+    		notificationIntent.putExtra(JobsContentProvider.CONTENT_ITEM_TYPE, jobUri);
     		// Indicate we're coming from GCMIntent
     		//notificationIntent.putExtra("gcmTrue", "true");
     		Log.d(TAG, "Adding jobUri " + jobUri + " to intent");

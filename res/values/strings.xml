@@ -24,18 +24,29 @@
     <string name="list_menu_map">Map</string>
     
     <!-- Preferences  -->
-    <string name="device_name">device_name</string>
-    <string name="device_name_summary">Enter your device name</string>
-    <string name="device_name_title">Device name</string>
-    <string name="device_name_default">My Samsung Tab</string>        
-    <string name="server_url">server_url</string>
-    <string name="server_url_summary">Enter the server URL</string>
-    <string name="server_url_title">Server URL</string>
-    <string name="server_url_default">http://196.201.6.235/whmcs</string>
+            
+    <string name="whmcs_hostname_key">whmcs_hostname_key</string>
+    <string name="whmcs_hostname_summary">Enter your WHMCS server host name or IP address</string>
+    <string name="whmcs_hostname_title">WHMCS Host</string>
+    <string name="whmcs_hostname_default">www.snowball.co.za</string>
+    
+    <string name="whmcs_folder_key">whmcs_folder_key</string>
+    <string name="whmcs_folder_summary">Enter your WHMCS installation folder</string>
+    <string name="whmcs_folder_title">WHMCS Folder</string>
+    <string name="whmcs_folder_default">support</string>
+    
+    <string name="email_key">email_key</string>
+    <string name="email_summary">Enter your WHMCS E-mail Address</string>
+    <string name="email_title">WHMCS E-mail Address</string>
+    <string name="email_default">user@sample.com</string>
+    
     <string name="pref_notification_summary">Enter a notification sound</string>
     <string name="pref_notification_title">Notification sound</string>
     <string name="pref_notification_default">content://settings/system/notification_sound</string>
-    <!-- Preferences  -->
+    
+    <!-- End Preferences  
+    <string name="pref_notification_default">content://settings/system/notification_sound</string>
+    -->
                        
     
     
@@ -43,7 +54,9 @@
     <string name="register_email">Email:</string>
     <string name="register_register">Register</string>
     
-    <string name="context_menu_list_call">Call</string>
+    <string name="context_menu_list_delete">Delete</string>
+    <string name="context_menu_list_call">Call</string>    
+    
     <string name="task_summary">Summary</string>
     <string name="task_description">Delete Task</string>
     

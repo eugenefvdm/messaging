@@ -3,18 +3,28 @@
 
     <PreferenceCategory
         android:key="first_category"
-        android:title="General" >
+        android:title="General" >       
         <EditTextPreference
-            android:key="@string/device_name"
-            android:summary="@string/device_name_summary"
-            android:title="@string/device_name_title"             
+            android:key="@string/whmcs_hostname_key"
+            android:summary="@string/whmcs_hostname_summary"
+            android:title="@string/whmcs_hostname_title"
+			android:defaultValue="@string/whmcs_hostname_default"
+			android:hint="@string/whmcs_hostname_default"
             />
         <EditTextPreference
-            android:key="@string/server_url"
-            android:summary="@string/server_url_summary"
-            android:title="@string/server_url_title"
-			android:defaultValue="@string/server_url_default"
+            android:key="@string/whmcs_folder_key"
+            android:summary="@string/whmcs_folder_summary"
+            android:title="@string/whmcs_folder_title"
+			android:defaultValue="@string/whmcs_folder_default"
+			android:hint="@string/whmcs_folder_default"
             />
+       	 <EditTextPreference
+            android:key="@string/email_key"
+            android:summary="@string/email_summary"
+            android:title="@string/email_title"
+			android:defaultValue="@string/email_default"
+			android:hint="@string/email_default"
+            />                
     </PreferenceCategory>
     <PreferenceCategory
         android:key="second_category"
@@ -31,3 +41,5 @@
     </PreferenceCategory>
 
 </PreferenceScreen>
+
+<!-- android:defaultValue="@string/pref_notification_default" -->

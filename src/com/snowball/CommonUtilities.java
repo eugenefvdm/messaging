@@ -6,6 +6,8 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.util.Patterns;
 
@@ -13,8 +15,8 @@ public final class CommonUtilities {
 	
 	// give your server registration url here
 	// TODO Combine these two constants and move to preferences / static variable
-    static final String SERVER_REGISTER_URL = "http://196.201.6.235/whmcs/modules/addons/messaging/register.php"; 
-    static final String SERVER_ACTION_URL = "http://196.201.6.235/whmcs/modules/addons/messaging/action.php";
+//    static final String SERVER_REGISTER_URL = "http://196.201.6.235/whmcs/modules/addons/messaging/register.php"; 
+//    static final String SERVER_ACTION_URL = "http://196.201.6.235/whmcs/modules/addons/messaging/action.php";
 
     // Google project id for "messaging" as set on the API console
     static final String SENDER_ID = "818143334463"; 
@@ -56,4 +58,22 @@ public final class CommonUtilities {
 		}
 		return null;
 	}
+    
+    public static boolean isEmailAddressPresent(Context context) {		
+		String email = getEmailAddress(context);
+		Log.d(TAG, "email returned from getEmailAddress: " + email); 
+		if (email.equals("") || email == null) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+    
+    public static String getEmailAddress(Context context) {
+    	SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+		String emailDefault = context.getResources().getString(R.string.email_default);
+		String email = sharedPref.getString(context.getString(R.string.email_key), emailDefault);
+		return email;
+    }
+    
 }

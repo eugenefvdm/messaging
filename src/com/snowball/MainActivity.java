@@ -5,6 +5,10 @@ import static com.snowball.CommonUtilities.EXTRA_MESSAGE;
 import static com.snowball.CommonUtilities.SENDER_ID;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
 
 import android.app.ActionBar;
 import android.app.FragmentTransaction;
@@ -14,7 +18,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -22,27 +25,30 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewConfiguration;
 import android.widget.Toast;
 
-import com.google.android.gcm.GCMRegistrar;
-import com.snowball.R;
-import com.snowball.db.JobContentProvider;
+import com.snowball.gcm.GCMRegistrar;
+import com.snowball.db.JobsContentProvider;
 
 public class MainActivity extends FragmentActivity implements
-		ActionBar.TabListener {
-	
+		ActionBar.TabListener, AsyncResponse {
+
 	protected static final String TAG = "MainActivity";
 	private ViewPager viewPager;
 	private TabsPagerAdapter mAdapter;
 	private ActionBar actionBar;
-	
-	private String[] tabs = { "Outstanding" , "Completed" };
-	
+
+	private String[] tabs = {
+			"Outstanding", "Completed" };
+
 	AsyncTask<Void, Void, Void> mRegisterTask;
+
+	HTTPTask asyncTask;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -50,99 +56,19 @@ public class MainActivity extends FragmentActivity implements
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		
+		setTitle("Job Tracker");
+
 		viewPager = (ViewPager) findViewById(R.id.pager);
 		actionBar = getActionBar();
 		mAdapter = new TabsPagerAdapter(getSupportFragmentManager());
 
 		viewPager.setAdapter(mAdapter);
 		actionBar.setHomeButtonEnabled(false);
-		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);		
+		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
-//		Bundle extras = getIntent().getExtras();
-//		if (savedInstanceState != null) {
-//			// Not implemented but here copied from JobDetailActivity to see if notifications must be reset
-//		} else {
-//			// Check if we're being called from notification panel (GCMIntent)
-//			if (extras != null) {
-//				String gcmTrue = extras.getString("gcmTrue");
-//				if (gcmTrue.equals("true")) {
-//					App.setPendingNotificationsCount(0);
-//				}	
-//			}							
-//		}
-		
 		// Add Tabs
 		for (String tab_name : tabs) {
-			actionBar.addTab(actionBar.newTab().setText(tab_name)
-					.setTabListener(this));
-		}
-		
-		// Initialize preferences
-		PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
-		
-		setTitle("Task List");
-				
-		// Make sure the device has the proper dependencies
-		Log.i(TAG, "Checking if device has proper dependencies...");
-		// Testing to see if GL events go
-		//GCMRegistrar.checkDevice(this);
-		Log.i(TAG, "...finished checking if device has proper dependencies");
-		// Make sure the manifest was properly set - uncomment when ready
-		// http://developer.android.com/reference/com/google/android/gcm/GCMRegistrar.html#checkManifest(android.content.Context)
-		// GCMRegistrar.checkManifest(this);
-
-		registerReceiver(mHandleMessageReceiver, new IntentFilter(DISPLAY_MESSAGE_ACTION));
-
-		// Get GCM registration id
-		Log.w(TAG, "GCMRegistrar.getRegistrationId");
-		final String regId = GCMRegistrar.getRegistrationId(this);
-
-		// Check if a registration ID is already present
-		if (regId.equals("")) {
-			// Registration is not present, register with GCM
-			Log.w(TAG, "GCMRegistrar.register");
-			GCMRegistrar.register(this, SENDER_ID);
-		} else {
-			// Device is already registered on GCM
-			Log.w(TAG, "GCMRegistrar.isRegisteredOnServer check");
-			if (GCMRegistrar.isRegisteredOnServer(this)) {
-				Log.w(TAG, "true");
-				// Skip registration
-				// Notify the user that the device is registered...
-				//Toast.makeText(getApplicationContext(), "Online", Toast.LENGTH_SHORT).show();
-			} else {
-				Log.w(TAG, "false");
-				// Try to register again, but not in the UI thread.
-				// It's also necessary to cancel the thread onDestroy(),
-				// hence the use of AsyncTask instead of a raw thread.
-				final Context context = this;
-				mRegisterTask = new AsyncTask<Void, Void, Void>() {
-					@Override
-					protected Void doInBackground(Void... params) {
-						// Create a new user on the messaging server
-						ServerUtilities.register(context, regId);
-						return null;
-					}
-					@Override
-					protected void onPostExecute(Void result) {
-						mRegisterTask = null;
-					}
-				};
-				mRegisterTask.execute(null, null, null);
-			}
-			
-			// Force action overflow see http://stackoverflow.com/questions/9286822/how-to-force-use-of-overflow-menu-on-devices-with-menu-button
-			try {
-		        ViewConfiguration config = ViewConfiguration.get(this);
-		        Field menuKeyField = ViewConfiguration.class.getDeclaredField("sHasPermanentMenuKey");
-		        if(menuKeyField != null) {
-		            menuKeyField.setAccessible(true);
-		            menuKeyField.setBoolean(config, false);
-		        }
-		    } catch (Exception ex) {
-		        // Ignore
-		    }
-			
+			actionBar.addTab(actionBar.newTab().setText(tab_name).setTabListener(this));
 		}
 
 		/**
@@ -164,43 +90,138 @@ public class MainActivity extends FragmentActivity implements
 			public void onPageScrollStateChanged(int arg0) {
 			}
 		});
+				
+		forceActionOverflowMenu();
+		checkDeviceRegistered();
 	}
-	
+
+	/**
+	 * Check GCM dependencies and see if user is already registered on the server
+	 */
+	private void checkDeviceRegistered() {
+		// Make sure the device has the proper dependencies
+//		Log.d(TAG, "Checking if device has proper dependencies...");
+//		GCMRegistrar.checkDevice(this);
+//		Log.d(TAG, "...finished checking if device has proper dependencies");
+//		// Make sure the manifest was properly set
+//		GCMRegistrar.checkManifest(this);
+
+		registerReceiver(mHandleMessageReceiver, new IntentFilter(DISPLAY_MESSAGE_ACTION));
+
+		// Get GCM registration id		
+		final String regId = GCMRegistrar.getRegistrationId(this);
+		Log.v(TAG, "GCMRegistrar.getRegistrationId, regId: " + regId);
+
+		// Check if a registration ID is already present
+		if (regId.equals("")) {
+			// Registration is not present, register with GCM
+			Log.w(TAG, "regId was '' so now doing GCMRegistrar.register");
+			GCMRegistrar.register(getApplicationContext(), SENDER_ID);
+		} else {
+			// Device is already registered on GCM
+			Log.v(TAG, "GCMRegistrar.isRegisteredOnServer check");
+			if (GCMRegistrar.isRegisteredOnServer(this)) {
+				Log.d(TAG, "User isRegisteredOnServer");
+				// Toast.makeText(getApplicationContext(), "Online",
+				// Toast.LENGTH_SHORT).show();
+			} else {
+				Log.w(TAG, "User is not registered on server");
+				checkEmailAddress();
+				String email = CommonUtilities.getEmailAddress(this);
+				registerUser(regId, email);
+			}
+		}
+	}
+
+	private void registerUser(String regId, String email) {
+		ArrayList<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(4);
+		nameValuePairs.add(new BasicNameValuePair("action", "register"));
+		nameValuePairs.add(new BasicNameValuePair("regId", regId));
+		nameValuePairs.add(new BasicNameValuePair("name", Build.MODEL));		
+		nameValuePairs.add(new BasicNameValuePair("email", email));
+		TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+		nameValuePairs.add(new BasicNameValuePair("device_id", telephonyManager.getDeviceId()));
+		doAsyncTask(nameValuePairs);
+		GCMRegistrar.setRegisteredOnServer(this, true);
+	}
+
+	@SuppressWarnings("unchecked")
+	private void doAsyncTask(ArrayList<NameValuePair> nameValuePairs) {
+		asyncTask = new HTTPTask(this);
+		asyncTask.delegate = MainActivity.this;
+		asyncTask.execute(nameValuePairs);
+	}
+
+	@Override
+	public void asyncProcessFinish(String output) {
+		Toast.makeText(MainActivity.this, output, Toast.LENGTH_SHORT).show();
+	}
+
+	private void checkEmailAddress() {
+		Log.i(TAG, "Checking if e-mail address is present in preferences");
+		// Check if e-mail address is in preferences
+		if (!CommonUtilities.isEmailAddressPresent(this)) {
+			Log.w(TAG, "Not present so storing it");
+			String firstEmailAccount = CommonUtilities.getDeviceAccounts(this);
+			SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+			SharedPreferences.Editor editor = settings.edit();
+			editor.putString(getString(R.string.email_key), firstEmailAccount);
+			editor.commit();
+		} else {
+			Log.i(TAG, "E-mail address is present in preferences");
+		}		
+	}
+
+	/**
+	 * Always show the overflow menu --- See
+	 * http://stackoverflow.com/questions/9286822
+	 * /how-to-force-use-of-overflow-menu-on-devices-with-menu-button
+	 * 
+	 * @param context
+	 */
+	private void forceActionOverflowMenu() {
+		try {
+			ViewConfiguration config = ViewConfiguration.get(this);
+			Field menuKeyField = ViewConfiguration.class.getDeclaredField("sHasPermanentMenuKey");
+			if (menuKeyField != null) {
+				menuKeyField.setAccessible(true);
+				menuKeyField.setBoolean(config, false);
+			}
+		} catch (Exception ex) {
+			// Ignore
+		}
+	}
+
 	@Override
 	protected void onStart() {
 		Log.v(TAG, "onStart");
-		// TODO Auto-generated method stub
 		super.onStart();
-	}	
-	
+	}
+
 	@Override
 	protected void onRestoreInstanceState(Bundle savedInstanceState) {
 		Log.v(TAG, "onRestoreInstanceState");
-		// TODO Auto-generated method stub
 		super.onRestoreInstanceState(savedInstanceState);
 	}
 
 	@Override
 	protected void onResume() {
-		// TODO Auto-generated method stub
 		Log.v(TAG, "onResume");
-		super.onResume();		
+		super.onResume();
 	}
-	
+
 	@Override
 	protected void onPause() {
-		// TODO Auto-generated method stub
 		Log.v(TAG, "onPause");
-		super.onPause();		
-	}	
-	
+		super.onPause();
+	}
+
 	@Override
 	protected void onStop() {
 		Log.v(TAG, "onStop");
-		// TODO Auto-generated method stub
 		super.onStop();
 	}
-	
+
 	@Override
 	protected void onDestroy() {
 		Log.v(TAG, "onDestroy");
@@ -208,27 +229,29 @@ public class MainActivity extends FragmentActivity implements
 			mRegisterTask.cancel(true);
 		}
 		try {
+			Log.v(TAG, "Calling unregisterReceiver");
 			unregisterReceiver(mHandleMessageReceiver);
-			GCMRegistrar.onDestroy(this);
+			Log.v(TAG, "Calling GCMRegistrar.onDestroy");
+			// http://stackoverflow.com/questions/11935680/gcmregistrar-ondestroycontext-crashing-receiver-not-registered
+			GCMRegistrar.onDestroy(getApplicationContext());
 		} catch (Exception e) {
 			Log.e(TAG, "MainActivity->onDestroy unregisterReceiver exception: " + e.getMessage());
-		}		
-		super.onDestroy();		
+		}
+		super.onDestroy();
 	}
 
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
-		// TODO Auto-generated method stub
 		Log.v(TAG, "onSaveInstanceState");
-		super.onSaveInstanceState(outState);		
+		super.onSaveInstanceState(outState);
 	}
-	
+
 	/**
 	 * Receive push message - see displayMessage in CommonUtilities
 	 * */
 	private final BroadcastReceiver mHandleMessageReceiver = new BroadcastReceiver() {
 		@Override
-		public void onReceive(Context context, Intent intent) {			
+		public void onReceive(Context context, Intent intent) {
 			String newMessage = intent.getExtras().getString(EXTRA_MESSAGE);
 			Log.d(TAG, "BroadcastReceiver called with this message " + newMessage);
 			// Waking up device if it is sleeping
@@ -239,9 +262,12 @@ public class MainActivity extends FragmentActivity implements
 
 			// Release wake lock
 			WakeLocker.release();
-			
-//			App.setPendingNotificationsCount(0);
-//			App.clearMessages();
+			// This was an attempt to reset notifications when you enter the app
+			// from the notification drawer, but it fails
+			// because the broadcast receiver is called on any notify, not only
+			// when you click
+			// App.setPendingNotificationsCount(0);
+			// App.clearMessages();
 		}
 	};
 
@@ -250,32 +276,33 @@ public class MainActivity extends FragmentActivity implements
 		getMenuInflater().inflate(R.menu.main_menu, menu);
 		return true;
 	}
-	
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.settings:
 			Intent i = new Intent();
 			i.setClass(MainActivity.this, PrefsActivity.class);
-			startActivityForResult(i,  0);
+			startActivityForResult(i, 0);
 			return true;
 		case R.id.delete_all:
 			deleteAll();
 			return true;
 		case R.id.unregister:
 			GCMRegistrar.unregister(this);
-			SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-			Editor editor = settings.edit();
-		    editor.clear();
-		    editor.commit();
+			// SharedPreferences settings =
+			// PreferenceManager.getDefaultSharedPreferences(this);
+			// Editor editor = settings.edit();
+			// editor.clear();
+			// editor.commit();
 			return true;
 		}
 		return false;
 	}
-	
+
 	private void deleteAll() {
-		Uri uri = Uri.parse(JobContentProvider.CONTENT_URI + "/");
-		getContentResolver().delete(uri, null, null);		
+		Uri uri = Uri.parse(JobsContentProvider.CONTENT_URI_JOBS + "/");
+		getContentResolver().delete(uri, null, null);
 	}
 
 	@Override

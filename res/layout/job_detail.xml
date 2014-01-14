@@ -21,6 +21,12 @@
         android:hint="@string/job_detail_client"
         android:textAppearance="?android:attr/textAppearanceMedium" >
     </TextView>
+    
+    <ListView
+        android:id="@+id/notes_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+    </ListView>
 
     <Button
         android:id="@+id/job_start_button"

@@ -1,7 +1,7 @@
 package com.snowball;
 
-import static com.snowball.CommonUtilities.SERVER_ACTION_URL;
-import static com.snowball.CommonUtilities.SERVER_REGISTER_URL;
+//import static com.snowball.CommonUtilities.SERVER_ACTION_URL;
+//import static com.snowball.CommonUtilities.SERVER_REGISTER_URL;
 import static com.snowball.CommonUtilities.displayMessage;
 
 import java.io.IOException;
@@ -22,7 +22,7 @@ import android.preference.PreferenceManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
-import com.google.android.gcm.GCMRegistrar;
+import com.snowball.gcm.GCMRegistrar;
 import com.snowball.R;
 
 public final class ServerUtilities {
@@ -35,15 +35,12 @@ public final class ServerUtilities {
 	 * Register this account/device pair within the server.
 	 * 
 	 */
-	static void register(final Context context, final String regId) {
+	static void register1(final Context context, final String regId) {
 		String phoneModel = Build.MODEL;
-		String firstEmailAccount = CommonUtilities.getDeviceAccounts(context); 
+		String firstEmailAccount = CommonUtilities.getDeviceAccounts(context);
 		Log.i(TAG, "Registering device regId:  " + regId);
-		// Obtain serverUrl from prefs
-		// Was SERVER_REGISTER_URL = "http://196.201.6.235/whmcs/modules/addons/messaging/register.php";
-		SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-		String defaultValue = context.getResources().getString(R.string.server_url_default);
-		String serverUrl = sharedPref.getString(context.getString(R.string.server_url), defaultValue);
+		// // "http://196.201.6.235/whmcs/modules/addons/messaging/register.php";
+		String serverUrl = getServerUrl(context) + "register.php";
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("regId", regId);
 		params.put("name", phoneModel);
@@ -92,39 +89,42 @@ public final class ServerUtilities {
 		CommonUtilities.displayMessage(context, message);
 	}
 
-//	/**
-//	 * Update ticket time on server based on start and end values
-//	 * 
-//	 * This should be combined with the existing server post routine
-//	 * 
-//	 */
-//	static void updateTimeOnServer(final Context context, String id, String start, String end) {
-//		String calendar_id = String.valueOf(id);
-//		String serverUrl = SERVER_ACTION_URL;
-//		Map<String, String> params = new HashMap<String, String>();
-//		params.put("action", "update");
-//		params.put("calendar_id", calendar_id);
-//		params.put("start", start);
-//		params.put("end", end);
-//		try {
-//			post(serverUrl, params);
-//		} catch (IOException e) {
-//			Log.e(TAG, "Unable to update ticket time on server");
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//	}
+	// /**
+	// * Update ticket time on server based on start and end values
+	// *
+	// * This should be combined with the existing server post routine
+	// *
+	// */
+	// static void updateTimeOnServer(final Context context, String id, String
+	// start, String end) {
+	// String calendar_id = String.valueOf(id);
+	// String serverUrl = SERVER_ACTION_URL;
+	// Map<String, String> params = new HashMap<String, String>();
+	// params.put("action", "update");
+	// params.put("calendar_id", calendar_id);
+	// params.put("start", start);
+	// params.put("end", end);
+	// try {
+	// post(serverUrl, params);
+	// } catch (IOException e) {
+	// Log.e(TAG, "Unable to update ticket time on server");
+	// // TODO Auto-generated catch block
+	// e.printStackTrace();
+	// }
+	// }
 
 	/**
 	 * Unregister this account/device pair within the server.
 	 */
-	static void unregister(final Context context, final String regId) {
+	static void unregister(final Context context, final String regId, final String email) {
 		Log.i(TAG, "Unregistering device (regId = " + regId + ")");
-		//String serverUrl = SERVER_ACTION_URL + "?action=unregister";
-		String serverUrl = SERVER_ACTION_URL;
+		// String serverUrl = SERVER_ACTION_URL + "?action=unregister";
+		//String serverUrl = SERVER_ACTION_URL;
+		String serverUrl = getServerUrl(context) + "action.php";
 		Map<String, String> params = new HashMap<String, String>();
-		params.put("action", "unregister");		
+		params.put("action", "unregister");
 		params.put("regId", regId);
+		params.put("email", email);
 		try {
 			post(serverUrl, params);
 			GCMRegistrar.setRegisteredOnServer(context, false);
@@ -198,4 +198,21 @@ public final class ServerUtilities {
 			}
 		}
 	}
+
+	public static String getServerUrl(Context context) {
+		// Obtain serverUrl from prefs
+		// Was SERVER_REGISTER_URL =
+		// "http://196.201.6.235/whmcs/modules/addons/messaging/register.php";
+		SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+		String serverUrlDefault = context.getResources().getString(R.string.whmcs_hostname_default);
+		String serverUrl = sharedPref.getString(context.getString(R.string.whmcs_hostname_key), serverUrlDefault);
+		
+		String whmcsFolderDefault = context.getResources().getString(R.string.whmcs_folder_default);
+		String whmcsFolder = sharedPref.getString(context.getString(R.string.whmcs_folder_key), whmcsFolderDefault);
+		
+		String finalUrl = "http://" + serverUrl + "/" + whmcsFolder + "/modules/addons/messaging/";
+		Log.i(TAG, "URL obtained from ServerUtilities.getServerUrl: " + finalUrl);
+		return finalUrl;
+	}
+	
 }

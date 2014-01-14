@@ -12,17 +12,26 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 
+import android.content.Context;
 import android.os.AsyncTask;
 
 public class HTTPTask extends AsyncTask<ArrayList<NameValuePair>, Void, String> {
 
 	public AsyncResponse delegate = null;
+	
+	private Context mContext;
+
+	public HTTPTask(Context context) {
+		mContext = context;
+		// TODO Auto-generated constructor stub
+	}
 
 	@Override
 	protected String doInBackground(ArrayList<NameValuePair>... params) {
 
 		HttpClient httpclient = new DefaultHttpClient();
-		HttpPost httppost = new HttpPost(CommonUtilities.SERVER_ACTION_URL);
+		//HttpPost httppost = new HttpPost(CommonUtilities.SERVER_ACTION_URL);
+		HttpPost httppost = new HttpPost(ServerUtilities.getServerUrl(mContext) + "action.php");
 
 		String responseBody = null;
 		try {
