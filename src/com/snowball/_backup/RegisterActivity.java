@@ -5,9 +5,6 @@ import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.snowball.AlertDialogManager;
 import com.snowball.MainActivity;
 import com.snowball.R;
-import com.snowball.R.id;
-import com.snowball.R.layout;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -45,8 +42,7 @@ public class RegisterActivity extends Activity {
 		// checkGooglePlayServicesAvailability();
 
 		SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-		String deviceName = sharedPrefs.getString("pref_key_device_name", null);
-		String serverURL = sharedPrefs.getString("pref_key_server_url", null);
+		String deviceName = sharedPrefs.getString("pref_key_device_name", null);		
 
 		//if (serverURL == null || deviceName == null) {
 			//Intent i = new Intent(getApplicationContext(), PrefsActivity.class);

@@ -32,8 +32,8 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
 import com.snowball.R;
-import com.snowball.db.JobsContentProvider;
-import com.snowball.db.JobsTable;
+import com.snowball.db.MyContentProvider;
+import com.snowball.db.Table;
 
 public class JobListFragment extends ListFragment implements
 		LoaderManager.LoaderCallbacks<Cursor> {
@@ -90,18 +90,18 @@ public class JobListFragment extends ListFragment implements
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
 		Intent i = new Intent(ctx, JobDetailActivity.class);
-		Uri jobUri = Uri.parse(JobsContentProvider.CONTENT_URI_JOBS + "/" + id);
+		Uri jobUri = Uri.parse(MyContentProvider.CONTENT_URI_JOBS + "/" + id);
 		Log.d(TAG, "List item Uri clicked: " + jobUri);
-		i.putExtra(JobsContentProvider.CONTENT_ITEM_TYPE, jobUri);
+		i.putExtra(MyContentProvider.CONTENT_ITEM_TYPE, jobUri);
 		startActivity(i);
 	}
 
 	private String getPhonenumber(Uri uri) {
-		String[] projection = { JobsTable.COLUMN_PHONENUMBER };
+		String[] projection = { Table.COLUMN_JOB_PHONENUMBER };
 		Cursor cursor = ctx.getContentResolver().query(uri, projection, null, null, null);
 		if (cursor != null) {
 			cursor.moveToFirst();
-			String phonenumber = cursor.getString(cursor.getColumnIndexOrThrow(JobsTable.COLUMN_PHONENUMBER));
+			String phonenumber = cursor.getString(cursor.getColumnIndexOrThrow(Table.COLUMN_JOB_PHONENUMBER));
 			cursor.close();
 			return phonenumber;
 		}
@@ -111,6 +111,8 @@ public class JobListFragment extends ListFragment implements
 	/**
 	 * Populate cursor for row inflation
 	 * 
+	 * TODO Added companyname and then load went wrong, had to change both filldata and loader<cursor>
+	 * 
 	 * Note: Every time new fields are added the String[] has to be updated TODO
 	 * Find more elegant way of doing this, e.g. use global
 	 */
@@ -118,11 +120,11 @@ public class JobListFragment extends ListFragment implements
 		// Fields from the database (projection) must include the _id column for
 		// the adapter to work
 		String[] from = new String[] {
-				JobsTable.COLUMN_DEPARTMENT, JobsTable.COLUMN_CITY,
-				JobsTable.COLUMN_CLIENT_NAME, JobsTable.COLUMN_START };
+				Table.COLUMN_JOB_DEPARTMENT, Table.COLUMN_JOB_CITY,
+				Table.COLUMN_JOB_CLIENT_NAME, Table.COLUMN_JOB_COMPANYNAME, Table.COLUMN_JOB_START };
 		// Fields on the UI to which we map
 		int[] to = new int[] {
-				R.id.department, R.id.start, R.id.city, R.id.client_name };
+				R.id.department_city, R.id.start, R.id.title, R.id.client_name };
 		getLoaderManager().initLoader(0, null, this);
 		adapter = new TasksAdapter(ctx, R.layout.job_row, null, from, to, 0);
 		setListAdapter(adapter);
@@ -133,12 +135,13 @@ public class JobListFragment extends ListFragment implements
 	@Override
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 		String[] projection = {
-				JobsTable.COLUMN_ID, JobsTable.COLUMN_DEPARTMENT,
-				JobsTable.COLUMN_CITY, JobsTable.COLUMN_CLIENT_NAME,
-				JobsTable.COLUMN_START };
+				Table.COLUMN_JOB_ID, Table.COLUMN_JOB_DEPARTMENT, Table.COLUMN_JOB_TITLE,
+				Table.COLUMN_JOB_CITY, Table.COLUMN_JOB_CLIENT_NAME, Table.COLUMN_JOB_COMPANYNAME,
+				Table.COLUMN_JOB_START };
 		String selection = "status != ?";
 		String[] selectionArgs = { mFilter };
-		CursorLoader cursorLoader = new CursorLoader(ctx, JobsContentProvider.CONTENT_URI_JOBS, projection, selection, selectionArgs, null);
+		String sortOrder = "start";
+		CursorLoader cursorLoader = new CursorLoader(ctx, MyContentProvider.CONTENT_URI_JOBS, projection, selection, selectionArgs, sortOrder);
 		return cursorLoader;
 	}
 
@@ -161,22 +164,25 @@ public class JobListFragment extends ListFragment implements
 			View view = layoutInflater.inflate(layout, parent, false);
 			return view;
 		}
-
+		
+		// When adding to bindView, be sure to also add to the loader, but not to filldata??
 		@Override
 		public void bindView(View view, Context context, Cursor cursor) {
-			String department = cursor.getString(cursor.getColumnIndex(JobsTable.COLUMN_DEPARTMENT));			
-			String city = cursor.getString(cursor.getColumnIndex(JobsTable.COLUMN_CITY));
-			String client_name = cursor.getString(cursor.getColumnIndex(JobsTable.COLUMN_CLIENT_NAME));
-			long unixStart = cursor.getLong(cursor.getColumnIndex(JobsTable.COLUMN_START));
+			String department = cursor.getString(cursor.getColumnIndex(Table.COLUMN_JOB_DEPARTMENT));			
+			String city = cursor.getString(cursor.getColumnIndex(Table.COLUMN_JOB_CITY));
+			String title = cursor.getString(cursor.getColumnIndex(Table.COLUMN_JOB_TITLE));
+			String client_name = cursor.getString(cursor.getColumnIndex(Table.COLUMN_JOB_CLIENT_NAME));
+			String companyname = cursor.getString(cursor.getColumnIndex(Table.COLUMN_JOB_COMPANYNAME));
+			long unixStart = cursor.getLong(cursor.getColumnIndex(Table.COLUMN_JOB_START));
 			Date d = new Date(unixStart * 1000);
 			TextView tv1 = (TextView) view.findViewById(R.id.start);
 			tv1.setText(DateFormat.format("E d hh:mm", d));
-			TextView tv2 = (TextView) view.findViewById(R.id.department);
-			tv2.setText(department);
-			TextView tv3 = (TextView) view.findViewById(R.id.city);
-			tv3.setText(city);
+			TextView tv2 = (TextView) view.findViewById(R.id.department_city);
+			tv2.setText(department + " " + city);
+			TextView tv3 = (TextView) view.findViewById(R.id.title);
+			tv3.setText(title);
 			TextView tv4 = (TextView) view.findViewById(R.id.client_name);
-			tv4.setText(client_name);
+			tv4.setText(client_name + " / " + companyname);
 		}
 	}
 
@@ -194,14 +200,14 @@ public class JobListFragment extends ListFragment implements
 		case DELETE_ID:
 		      AdapterContextMenuInfo info1 = (AdapterContextMenuInfo) item
 		          .getMenuInfo();
-		      Uri uri1 = Uri.parse(JobsContentProvider.CONTENT_URI_JOBS + "/"
+		      Uri uri1 = Uri.parse(MyContentProvider.CONTENT_URI_JOBS + "/"
 		          + info1.id);
 		      ctx.getContentResolver().delete(uri1, null, null);
 		      fillData(mFilter);
 		      return true;		    
 		case CALL_CLIENT_ID:
 			AdapterContextMenuInfo info2 = (AdapterContextMenuInfo) item.getMenuInfo();
-			Uri uri2 = Uri.parse(JobsContentProvider.CONTENT_URI_JOBS + "/" + info2.id);
+			Uri uri2 = Uri.parse(MyContentProvider.CONTENT_URI_JOBS + "/" + info2.id);
 			String phonenumber = getPhonenumber(uri2);
 			Log.i(TAG, "Calling " + phonenumber);
 			Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + phonenumber));

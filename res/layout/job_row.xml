@@ -16,10 +16,11 @@
     </ImageView>
 
     <TextView
-        android:id="@+id/department"
+        android:id="@+id/department_city"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_toRightOf="@id/icon"
+        android:layout_toLeftOf="@+id/start"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="@string/task_row_department"          
         >
@@ -36,12 +37,12 @@
     </TextView>
     
     <TextView
-        android:id="@+id/city"
+        android:id="@+id/title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_toRightOf="@id/icon"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:layout_below="@id/department"                                
+        android:layout_below="@id/department_city"                                
         android:text="@string/task_row_city"         
         >
     </TextView>
@@ -52,7 +53,7 @@
         android:layout_height="wrap_content"
         android:layout_toRightOf="@id/icon"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:layout_below="@id/city"                                
+        android:layout_below="@id/title"                                
         android:text="@string/task_row_client_name"         
         >
     </TextView>

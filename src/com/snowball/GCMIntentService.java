@@ -24,8 +24,6 @@ import android.app.Notification;
 import android.app.Notification.InboxStyle;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.ContentUris;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -39,8 +37,9 @@ import android.util.Log;
 
 import com.snowball.gcm.GCMBaseIntentService;
 import com.snowball.R;
-import com.snowball.db.JobsContentProvider;
+import com.snowball.db.MyContentProvider;
 
+@SuppressWarnings("deprecation")
 public class GCMIntentService extends GCMBaseIntentService implements AsyncResponse {
 
 	private static final String TAG = "GCMIntentService";
@@ -73,8 +72,6 @@ public class GCMIntentService extends GCMBaseIntentService implements AsyncRespo
 		telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
 		nameValuePairs.add(new BasicNameValuePair("device_id", telephonyManager.getDeviceId()));
 		doAsyncTask(nameValuePairs);
-        
-        
         //ServerUtilities.register(context, registrationId);
         //displayMessage(context, "Your device registered with Cloud Messaging");
     }
@@ -111,51 +108,55 @@ public class GCMIntentService extends GCMBaseIntentService implements AsyncRespo
     protected void onMessage(Context context, Intent intent) {
     	// jobUri will be created when a new record is inserted or an existing record is updated
     	// This is passed to generateNotification which will add it to the intent    	
+    	
+    	// TODO dbRecordId not used since migration to MessageReceiver
     	int dbRecordId = 0;
-    	ContentValues values;
+    	
     	String messageType = "";
         String message = intent.getExtras().getString("price");
         Log.i(TAG, "Received message '" + message + "' and now examining content...");
-        String department = null;
-        String extra = null;
+        
+        
 		// The AndroidHive demo return NULL first time you register so we handle it gracefully
         if (message == null) {
         	messageType = "First time registration! Welcome!";
-        	Log.e(TAG, "Message is NULL!");
+        	Log.e(TAG, "Message is NULL assuming first time registration...!");
         } else {
-        	String action = JobsContentProvider.getAction(message);
-        	if (action != null) {
-        		values = JobsContentProvider.convertMessageToContentValues(action, message);
-        		department = values.getAsString("department");
-        		extra = values.getAsString("extra");
-        		if (action.equals("insert")) {
-        			// Insert record and obtain ID for use in NotificationIntent
-        			Uri jobUri = getContentResolver().insert(JobsContentProvider.CONTENT_URI_JOBS, values);
-        			long newDbRecord = ContentUris.parseId(jobUri);
-        			// Convert long to int because Pending Intent Request Codes need to be integer
-        			dbRecordId = (int) newDbRecord;
-        			Log.d(TAG, "New ID generated after GCM payload: " + dbRecordId);
-        			messageType = "New " + department;
-        		} else if (action.equals("update")) {
-        			dbRecordId = values.getAsInteger("calendar_id");
-        			Uri todoUri = Uri.parse(JobsContentProvider.CONTENT_URI_JOBS + "/ticket" + "/" + dbRecordId);        			
-        			getContentResolver().update(todoUri, values, null, null);
-        			// Update notes (for now, insert)
-        			ContentValues values2 = JobsContentProvider.getNotes(action, message);
-        			getContentResolver().insert(JobsContentProvider.CONTENT_URI_NOTES, values2);
-        			
-        			messageType = extra;
-        		} else if (action.equals("delete")) {        			
-        			dbRecordId = values.getAsInteger("calendar_id");
-        			Log.d(TAG, "Action delete being executed on calendar_id " + String.valueOf(dbRecordId));
-        			Uri todoUri = Uri.parse(JobsContentProvider.CONTENT_URI_JOBS + "/ticket" + "/" + dbRecordId);        			
-        			getContentResolver().delete(todoUri, null, null);
-        			//messageType = "Deleted " + department;
-        			messageType = "Deleted item";
-        		}
-        	} else {
-        		messageType = "System Message: " + message;
-        	}
+        	MessageReceiver incomingMessage = new MessageReceiver(context);
+        	messageType = incomingMessage.checkType(message); 
+//        	String action = JobsContentProvider.getAction(message);
+//        	if (action != null) {
+//        		values = JobsContentProvider.convertMessageToContentValues(action, message);
+//        		department = values.getAsString("department");
+//        		extra = values.getAsString("extra");
+//        		if (action.equals("insert")) {
+//        			// Insert record and obtain ID for use in NotificationIntent
+//        			Uri jobUri = getContentResolver().insert(JobsContentProvider.CONTENT_URI_JOBS, values);
+//        			long newDbRecord = ContentUris.parseId(jobUri);
+//        			// Convert long to int because Pending Intent Request Codes need to be integer
+//        			dbRecordId = (int) newDbRecord;
+//        			Log.d(TAG, "New ID generated after GCM payload: " + dbRecordId);
+//        			messageType = "New " + department;
+//        		} else if (action.equals("update")) {
+//        			dbRecordId = values.getAsInteger("calendar_id");
+//        			Uri todoUri = Uri.parse(JobsContentProvider.CONTENT_URI_JOBS + "/ticket" + "/" + dbRecordId);        			
+//        			getContentResolver().update(todoUri, values, null, null);
+//        			// Update notes (for now, insert)
+//        			ContentValues values2 = JobsContentProvider.getNotes(action, message);
+//        			getContentResolver().insert(JobsContentProvider.CONTENT_URI_NOTES, values2);
+//        			
+//        			messageType = extra;
+//        		} else if (action.equals("delete")) {        			
+//        			dbRecordId = values.getAsInteger("calendar_id");
+//        			Log.d(TAG, "Action delete being executed on calendar_id " + String.valueOf(dbRecordId));
+//        			Uri todoUri = Uri.parse(JobsContentProvider.CONTENT_URI_JOBS + "/ticket" + "/" + dbRecordId);        			
+//        			getContentResolver().delete(todoUri, null, null);
+//        			//messageType = "Deleted " + department;
+//        			messageType = "Deleted item";
+//        		}
+//        	} else {
+//        		messageType = "System Message: " + message;
+//        	}
         }
         displayMessage(context, messageType);        
 		generateNotification(context, messageType, dbRecordId);                    
@@ -178,8 +179,8 @@ public class GCMIntentService extends GCMBaseIntentService implements AsyncRespo
     	//Intent notificationIntent = new Intent(context, JobDetailActivity.class);
     	Intent notificationIntent = new Intent(context, MainActivity.class);
     	if (dbRecordId != 0) {
-    		Uri jobUri = Uri.parse(JobsContentProvider.CONTENT_URI_JOBS + "/" + dbRecordId);
-    		notificationIntent.putExtra(JobsContentProvider.CONTENT_ITEM_TYPE, jobUri);
+    		Uri jobUri = Uri.parse(MyContentProvider.CONTENT_URI_JOBS + "/" + dbRecordId);
+    		notificationIntent.putExtra(MyContentProvider.CONTENT_ITEM_TYPE, jobUri);
     		// Indicate we're coming from GCMIntent
     		//notificationIntent.putExtra("gcmTrue", "true");
     		Log.d(TAG, "Adding jobUri " + jobUri + " to intent");

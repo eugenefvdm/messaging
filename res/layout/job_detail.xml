@@ -22,11 +22,33 @@
         android:textAppearance="?android:attr/textAppearanceMedium" >
     </TextView>
     
+    <View
+    android:layout_width="fill_parent"
+    android:layout_height="1dp"
+    android:background="@android:color/darker_gray"/>
+    
+    <Button
+        android:id="@+id/job_custom_fields_button"
+        android:layout_width="192dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="@string/job_button_custom_fields" />
+    
+    <View
+    android:layout_width="fill_parent"
+    android:layout_height="1dp"
+    android:background="@android:color/darker_gray"/>
+    
     <ListView
         android:id="@+id/notes_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
     </ListView>
+    
+    <View
+    android:layout_width="fill_parent"
+    android:layout_height="1dp"
+    android:background="@android:color/darker_gray"/>
 
     <Button
         android:id="@+id/job_start_button"

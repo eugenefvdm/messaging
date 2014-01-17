@@ -33,8 +33,9 @@ import android.view.ViewConfiguration;
 import android.widget.Toast;
 
 import com.snowball.gcm.GCMRegistrar;
-import com.snowball.db.JobsContentProvider;
+import com.snowball.db.MyContentProvider;
 
+@SuppressWarnings("deprecation")
 public class MainActivity extends FragmentActivity implements
 		ActionBar.TabListener, AsyncResponse {
 
@@ -55,8 +56,6 @@ public class MainActivity extends FragmentActivity implements
 		Log.v(TAG, "onCreate");
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		
-		setTitle("Job Tracker");
 
 		viewPager = (ViewPager) findViewById(R.id.pager);
 		actionBar = getActionBar();
@@ -205,21 +204,9 @@ public class MainActivity extends FragmentActivity implements
 	}
 
 	@Override
-	protected void onResume() {
-		Log.v(TAG, "onResume");
-		super.onResume();
-	}
-
-	@Override
 	protected void onPause() {
 		Log.v(TAG, "onPause");
 		super.onPause();
-	}
-
-	@Override
-	protected void onStop() {
-		Log.v(TAG, "onStop");
-		super.onStop();
 	}
 
 	@Override
@@ -238,12 +225,6 @@ public class MainActivity extends FragmentActivity implements
 			Log.e(TAG, "MainActivity->onDestroy unregisterReceiver exception: " + e.getMessage());
 		}
 		super.onDestroy();
-	}
-
-	@Override
-	protected void onSaveInstanceState(Bundle outState) {
-		Log.v(TAG, "onSaveInstanceState");
-		super.onSaveInstanceState(outState);
 	}
 
 	/**
@@ -301,7 +282,7 @@ public class MainActivity extends FragmentActivity implements
 	}
 
 	private void deleteAll() {
-		Uri uri = Uri.parse(JobsContentProvider.CONTENT_URI_JOBS + "/");
+		Uri uri = Uri.parse(MyContentProvider.CONTENT_URI_JOBS + "/");
 		getContentResolver().delete(uri, null, null);
 	}
 

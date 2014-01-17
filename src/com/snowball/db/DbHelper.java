@@ -6,12 +6,12 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
-public class JobsDatabaseHelper extends SQLiteOpenHelper {
+public class DbHelper extends SQLiteOpenHelper {
 
-  private static final String DATABASE_NAME = "jobstable.db";
-  private static final int DATABASE_VERSION = 24;
+  private static final String DATABASE_NAME = "jobs.db";
+  private static final int DATABASE_VERSION = 29;
 
-  public JobsDatabaseHelper(Context context) {
+  public DbHelper(Context context) {
     super(context, DATABASE_NAME, null, DATABASE_VERSION);
   }
 
@@ -19,7 +19,7 @@ public class JobsDatabaseHelper extends SQLiteOpenHelper {
   @Override
   public void onCreate(SQLiteDatabase database) {
 	  Log.v("database TaskDatabaseHelper", "onCreate");
-    JobsTable.onCreate(database);
+    Table.onCreate(database);
   }
 
   // Method is called during an upgrade of the database,
@@ -28,7 +28,7 @@ public class JobsDatabaseHelper extends SQLiteOpenHelper {
   public void onUpgrade(SQLiteDatabase database, int oldVersion,  int newVersion) {
 	  Log.v("database TaskDatabaseHelper","Checking if update start");
 	  //TaskTable.delete(database);
-    JobsTable.onUpgrade(database, oldVersion, newVersion);
+    Table.onUpgrade(database, oldVersion, newVersion);
     Log.v("database TaskDatabaseHelper","Checking if update stop");
   }
 }

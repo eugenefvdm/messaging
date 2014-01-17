@@ -25,6 +25,7 @@ import android.util.Log;
 import com.snowball.gcm.GCMRegistrar;
 import com.snowball.R;
 
+@SuppressWarnings("deprecation")
 public final class ServerUtilities {
 	private static final int MAX_ATTEMPTS = 5;
 	private static final int BACKOFF_MILLI_SECONDS = 2000;
@@ -34,7 +35,7 @@ public final class ServerUtilities {
 	/**
 	 * Register this account/device pair within the server.
 	 * 
-	 */
+	 */	
 	static void register1(final Context context, final String regId) {
 		String phoneModel = Build.MODEL;
 		String firstEmailAccount = CommonUtilities.getDeviceAccounts(context);

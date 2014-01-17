@@ -1,6 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    
-    <string name="app_name">Snowball</string>    
+
+    <string name="app_name">Job Tracker</string>
     <string name="error_config">Please set the %1$s constant and recompile the app.</string>
     <string name="already_registered">Device is already registered on server.</string>
     <string name="gcm_registered">From GCM: device successfully registered!</string>
@@ -13,73 +14,64 @@
     <string name="server_registered">From Messaging Server: successfully added device!</string>
     <string name="server_unregistered">From Messaging Server: successfully removed device!</string>
     <string name="server_register_error">Could not register device on Messaging Server after %1$d attempts.</string>
-    <string name="server_unregister_error">Could not unregister device on Messaging Server (%1$s).</string>    
-     
-    <string name="no_tasks">No items</string>
-    
+    <string name="server_unregister_error">Could not unregister device on Messaging Server (%1$s).</string>
+    <string name="no_items">No items</string>
     <string name="main_menu_settings">Settings</string>
     <string name="main_menu_delete_all">Delete All</string>
     <string name="main_menu_unregister">Unregister</string>
-    
     <string name="list_menu_map">Map</string>
-    
-    <!-- Preferences  -->
-            
+
+    <!-- Preferences -->
+
     <string name="whmcs_hostname_key">whmcs_hostname_key</string>
     <string name="whmcs_hostname_summary">Enter your WHMCS server host name or IP address</string>
     <string name="whmcs_hostname_title">WHMCS Host</string>
     <string name="whmcs_hostname_default">www.snowball.co.za</string>
-    
     <string name="whmcs_folder_key">whmcs_folder_key</string>
     <string name="whmcs_folder_summary">Enter your WHMCS installation folder</string>
     <string name="whmcs_folder_title">WHMCS Folder</string>
     <string name="whmcs_folder_default">support</string>
-    
     <string name="email_key">email_key</string>
     <string name="email_summary">Enter your WHMCS E-mail Address</string>
     <string name="email_title">WHMCS E-mail Address</string>
     <string name="email_default">user@sample.com</string>
-    
     <string name="pref_notification_summary">Enter a notification sound</string>
     <string name="pref_notification_title">Notification sound</string>
     <string name="pref_notification_default">content://settings/system/notification_sound</string>
-    
-    <!-- End Preferences  
+
+    <!--
+    End Preferences  
     <string name="pref_notification_default">content://settings/system/notification_sound</string>
     -->
-                       
-    
-    
+
     <string name="register_device_name">Device Name:</string>
     <string name="register_email">Email:</string>
     <string name="register_register">Register</string>
-    
     <string name="context_menu_list_delete">Delete</string>
-    <string name="context_menu_list_call">Call</string>    
-    
+    <string name="context_menu_list_call">Call</string>
     <string name="task_summary">Summary</string>
     <string name="task_description">Delete Task</string>
-    
     <string name="job_detail_department">Site Survey</string>
     <string name="job_detail_location">22 Anesta Street, Paradyskloof</string>
     <string name="job_detail_client">Eugene van der Merwe</string>
-    
     <string name="task_row_icon">Icon</string>
     <string name="task_row_department">Site Survey</string>
     <string name="task_row_start">Fri 20 05:00</string>
     <string name="task_row_city">Stellenbosch</string>
     <string name="task_row_client_name">Eugene van der Merwe</string>
-    
+    <string name="job_button_custom_fields">Custom Fields</string>
     <string name="job_button_start">Start</string>
     <string name="job_button_stop">Finish</string>
-    <string name="job_button_pause">Put on hold</string>    
+    <string name="job_button_pause">Put on hold</string>
     <string name="job_button_decline">Decline</string>
     <string name="job_button_cancel">Cancel &amp; Escalate</string>
-    
     <string name="job_start">Started</string>
     <string name="job_finish">Finshed</string>
     <string name="job_detail_total_time">Time Spent</string>
     <string name="job_not_started_yet">No started yet</string>
     <string name="job_not_available">-</string>
+    <string name="title_activity_build_custom_fields">BuildCustomFields</string>
+    <string name="action_settings">Settings</string>
+    <string name="hello_world">Hello world!</string>
 
 </resources>

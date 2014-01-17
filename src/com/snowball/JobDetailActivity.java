@@ -12,8 +12,8 @@ import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
 import com.snowball.R;
-import com.snowball.db.JobsContentProvider;
-import com.snowball.db.JobsTable;
+import com.snowball.db.MyContentProvider;
+import com.snowball.db.Table;
 
 import android.app.ActionBar;
 import android.app.Activity;
@@ -45,7 +45,7 @@ import android.widget.Toast;
  */
 public class JobDetailActivity extends Activity implements AsyncResponse {
 
-	private static final String TAG = "DetailActivity";
+	private static final String TAG = "JobDetailActivity";
 	private TextView mTxtLocationText;
 	private TextView mTxtClientText;
 	
@@ -54,6 +54,7 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 	private TextView mTxtStartText;
 	private TextView mTxtStopText;
 
+	private Button mCustomFields;
 	private Button mBtnStart;
 	private Button mBtnEnd;
 	private Button mBtnPause;
@@ -63,27 +64,29 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 	private ArrayList<String> mNotes = new ArrayList<String>();
 
 	// GPSTracker class
-	GPSTracker gps;
+	GPSTracker mGps;
 
-	private Uri jobUri;
+	private Uri mJobUri;
 
-	HTTPTask asyncTask;
+	// TODO Doesn't need to be a member variable
+	HTTPTask mAsyncTask;
 	AsyncTask<Void, Void, Void> mUpdateJob;
 
-	private Cursor cursor;
+	private Cursor mCursor;
 	private String mCalendarId;
 
 	// Member variables that are passed to map activity and used to set activity
 	// title
 	private String mDepartment, mClient, mAddressSuburb, mCity;
 
+	// TODO Doesn't need to be a member variable
 	String[] mProjection = {
-			JobsTable.COLUMN_CLIENT_ID, JobsTable.COLUMN_CALENDAR_ID,
-			JobsTable.COLUMN_TICKET_ID, JobsTable.COLUMN_CLIENT_NAME,
-			JobsTable.COLUMN_ADDRESS1, JobsTable.COLUMN_ADDRESS2,
-			JobsTable.COLUMN_CITY, JobsTable.COLUMN_DEPARTMENT,
-			JobsTable.COLUMN_START_ACTUAL, JobsTable.COLUMN_END_ACTUAL,
-			JobsTable.COLUMN_STATUS };
+			Table.COLUMN_JOB_CLIENT_ID, Table.COLUMN_JOB_CALENDAR_ID,
+			Table.COLUMN_JOB_TICKET_ID, Table.COLUMN_JOB_CLIENT_NAME,
+			Table.COLUMN_JOB_ADDRESS1, Table.COLUMN_JOB_ADDRESS2,
+			Table.COLUMN_JOB_CITY, Table.COLUMN_JOB_DEPARTMENT,
+			Table.COLUMN_JOB_START_ACTUAL, Table.COLUMN_JOB_END_ACTUAL,
+			Table.COLUMN_JOB_STATUS };
 
 	@Override
 	protected void onCreate(Bundle bundle) {
@@ -99,6 +102,7 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 		mTxtStartText = (TextView) findViewById(R.id.job_edit_start_text);
 		mTxtStopText = (TextView) findViewById(R.id.job_edit_stop_text);
 
+		mCustomFields = (Button) findViewById(R.id.job_custom_fields_button);
 		mBtnStart = (Button) findViewById(R.id.job_start_button);
 		mBtnEnd = (Button) findViewById(R.id.job_finish_button);
 		mBtnPause = (Button) findViewById(R.id.job_pause_button);
@@ -108,18 +112,27 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 		Bundle extras = getIntent().getExtras();
 		if (bundle != null) {
 			// todoUri retrieved from saved instance
-			jobUri = (Uri) bundle.getParcelable(JobsContentProvider.CONTENT_ITEM_TYPE);
+			mJobUri = (Uri) bundle.getParcelable(MyContentProvider.CONTENT_ITEM_TYPE);
 		} else {
 			// todoUri passed from the list activity or the intent service
-			jobUri = extras.getParcelable(JobsContentProvider.CONTENT_ITEM_TYPE);
-			Log.d(TAG, "jobUri: " + jobUri);
+			mJobUri = extras.getParcelable(MyContentProvider.CONTENT_ITEM_TYPE);
+			Log.d(TAG, "jobUri: " + mJobUri);
 		}
-		fillData(jobUri);
+		fillData(mJobUri);
 
 		ActionBar ab = getActionBar();
 		ab.setDisplayHomeAsUpEnabled(true);
 		ab.setTitle(mDepartment);
 		ab.setSubtitle(mCity);
+		
+		mCustomFields.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				Intent i = new Intent(JobDetailActivity.this, BuildCustomLayout.class);
+				//Intent i = new Intent(JobDetailActivity.this, BuildAlertDialog.class);
+				//i.putExtra("custom_fields", custom_fields);				
+				startActivity(i); // For result?
+			}
+		});
 
 		mBtnStart.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
@@ -130,14 +143,14 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 					Date d = new Date(now * 1000);
 					mTxtStartText.setText(DateFormat.format("dd/MM hh:mm", d));
 					ContentValues values = new ContentValues();
-					values.put(JobsTable.COLUMN_STATUS, "started");
-					values.put(JobsTable.COLUMN_START_ACTUAL, startTime);
-					getContentResolver().update(jobUri, values, null, null);
+					values.put(Table.COLUMN_JOB_STATUS, "started");
+					values.put(Table.COLUMN_JOB_START_ACTUAL, startTime);
+					getContentResolver().update(mJobUri, values, null, null);
 					action = "start";
 				} else {
 					action = "resume";
 				}
-				serverAction(action, startTime, null);
+				postToMessagingServer(action, startTime, null);
 				setButtonStatus("started");
 			}
 		});
@@ -148,10 +161,10 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 				final String endTime = String.valueOf(now);
 
 				ContentValues values = new ContentValues();
-				values.put(JobsTable.COLUMN_STATUS, "paused");
-				getContentResolver().update(jobUri, values, null, null);
+				values.put(Table.COLUMN_JOB_STATUS, "paused");
+				getContentResolver().update(mJobUri, values, null, null);
 
-				serverAction("pause", endTime, null);
+				postToMessagingServer("pause", endTime, null);
 				setButtonStatus("paused");
 			}
 		});
@@ -164,11 +177,11 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 				Date d = new Date(now * 1000);
 				mTxtStopText.setText(DateFormat.format("dd/MM hh:mm", d));
 				ContentValues values = new ContentValues();
-				values.put(JobsTable.COLUMN_END_ACTUAL, now);
-				values.put(JobsTable.COLUMN_STATUS, "completed");
-				getContentResolver().update(jobUri, values, null, null);
+				values.put(Table.COLUMN_JOB_END_ACTUAL, now);
+				values.put(Table.COLUMN_JOB_STATUS, "completed");
+				getContentResolver().update(mJobUri, values, null, null);
 
-				serverAction("end", endTime, null);
+				postToMessagingServer("end", endTime, null);
 				setButtonStatus("completed");
 			}
 		});
@@ -179,7 +192,7 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 				new AlertDialog.Builder(JobDetailActivity.this).setTitle("Enter Cancel Reason").setView(input).setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog, int whichButton) {
 						String reason = input.getText().toString();
-						serverAction("cancel", reason, "");
+						postToMessagingServer("cancel", reason, "");
 						// setButtonStatus("cancelled");
 					}
 				}).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -196,7 +209,7 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 				new AlertDialog.Builder(JobDetailActivity.this).setTitle("Enter Decline Reason").setView(input).setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog, int whichButton) {
 						String reason = input.getText().toString();
-						serverAction("decline", reason, "");
+						postToMessagingServer("decline", reason, "");
 						// setButtonStatus("declined");
 					}
 				}).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -260,22 +273,27 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 	/**
 	 * Post a message to the server for this calendar ID
 	 * 
+	 * TODO Looks like extra is never used, also check server side
+	 * 
 	 * @param action
 	 * @param value
 	 * @param extra
 	 *            Optional parameter used when declining or canceling a job
 	 */
-	private void serverAction(String action, String value, String extra) {
-		ArrayList<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(3);
+	private void postToMessagingServer(String action, String value, String extra) {
+		ArrayList<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
 		nameValuePairs.add(new BasicNameValuePair("calendar_id", mCalendarId));
 		nameValuePairs.add(new BasicNameValuePair("action", action));
 		nameValuePairs.add(new BasicNameValuePair("value", value));
+		if (extra != null) {
+			nameValuePairs.add(new BasicNameValuePair("extra", extra));
+		}
 
-		gps = new GPSTracker(JobDetailActivity.this);
+		mGps = new GPSTracker(JobDetailActivity.this);
 		// check if GPS enabled
-		if (gps.canGetLocation()) {
-			double lat = gps.getLatitude();
-			double lng = gps.getLongitude();
+		if (mGps.canGetLocation()) {
+			double lat = mGps.getLatitude();
+			double lng = mGps.getLongitude();
 			String message = "GPS Location is - \nLat: " + lat + "\nLong: " + lng;
 			Log.w(TAG, message);			
 			nameValuePairs.add(new BasicNameValuePair("lat", String.valueOf(lat)));
@@ -283,25 +301,27 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 		} else {
 			Log.e(TAG, "Can't get location, GPS or Network is not enabled");
 			// Ask user to enable GPS/network in settings
-			gps.showSettingsAlert();
+			mGps.showSettingsAlert();
 		}
-
-		if (extra != null) {
-			nameValuePairs.add(new BasicNameValuePair("extra", extra));
-		}
+		
 		doAsyncTask(nameValuePairs);
 	}
 
-	// I had problems with this optional parameters working
+	// I had problems with this optional parameters working so at places I just send null instead of extra
 	// private void serverAction(String action, String value) {
 	// serverAction(action, value);
 	// }
 
+	/**
+	 * Send JSON to the Messaging Server asynchronously and receive a callback on asyncProcessFinish
+	 * 
+	 * @param nameValuePairs
+	 */
 	@SuppressWarnings("unchecked")
 	private void doAsyncTask(ArrayList<NameValuePair> nameValuePairs) {
-		asyncTask = new HTTPTask(this);
-		asyncTask.delegate = JobDetailActivity.this;
-		asyncTask.execute(nameValuePairs);
+		mAsyncTask = new HTTPTask(this);
+		mAsyncTask.delegate = JobDetailActivity.this;
+		mAsyncTask.execute(nameValuePairs);
 	}
 
 	@Override
@@ -356,66 +376,67 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 		}
 	}
 
+	/**
+	 * Populate the job detail form with values from the database.
+	 * Branch off to fillNotes to populate the notes for this job.
+	 * 
+	 * @param uri Current job passed from activity or intent
+	 */
 	private void fillData(Uri uri) {
-		cursor = getContentResolver().query(uri, mProjection, null, null, null);
-		if (cursor != null) {
-			cursor.moveToFirst();
-			Long ticketId = cursor.getLong(cursor.getColumnIndexOrThrow(JobsTable.COLUMN_TICKET_ID));
-			mCalendarId = cursor.getString(cursor.getColumnIndexOrThrow(JobsTable.COLUMN_CALENDAR_ID));
-			mDepartment = cursor.getString(cursor.getColumnIndexOrThrow(JobsTable.COLUMN_DEPARTMENT));
-			mClient = cursor.getString(cursor.getColumnIndexOrThrow(JobsTable.COLUMN_CLIENT_NAME));
-			String address1 = cursor.getString(cursor.getColumnIndexOrThrow(JobsTable.COLUMN_ADDRESS1));
-			String address2 = cursor.getString(cursor.getColumnIndexOrThrow(JobsTable.COLUMN_ADDRESS2));
+		mCursor = getContentResolver().query(uri, mProjection, null, null, null);
+		if (mCursor != null) {
+			mCursor.moveToFirst();
+			Long ticketId = mCursor.getLong(mCursor.getColumnIndexOrThrow(Table.COLUMN_JOB_TICKET_ID));
+			mCalendarId = mCursor.getString(mCursor.getColumnIndexOrThrow(Table.COLUMN_JOB_CALENDAR_ID));
+			mDepartment = mCursor.getString(mCursor.getColumnIndexOrThrow(Table.COLUMN_JOB_DEPARTMENT));
+			mClient = mCursor.getString(mCursor.getColumnIndexOrThrow(Table.COLUMN_JOB_CLIENT_NAME));
+			String address1 = mCursor.getString(mCursor.getColumnIndexOrThrow(Table.COLUMN_JOB_ADDRESS1));
+			String address2 = mCursor.getString(mCursor.getColumnIndexOrThrow(Table.COLUMN_JOB_ADDRESS2));
 			mAddressSuburb = address1 + ", " + address2;
-			mCity = cursor.getString(cursor.getColumnIndexOrThrow(JobsTable.COLUMN_CITY));
-			String status = cursor.getString(cursor.getColumnIndexOrThrow(JobsTable.COLUMN_STATUS));
+			mCity = mCursor.getString(mCursor.getColumnIndexOrThrow(Table.COLUMN_JOB_CITY));
+			String status = mCursor.getString(mCursor.getColumnIndexOrThrow(Table.COLUMN_JOB_STATUS));
 			setButtonStatus(status);
 			mTxtLocationText.setText(mAddressSuburb);
 			mTxtClientText.setText(mClient);
 			// Obtain Unix time from stored database field and display real date
-			long unixTime = cursor.getLong(cursor.getColumnIndexOrThrow(JobsTable.COLUMN_START_ACTUAL));
+			long unixTime = mCursor.getLong(mCursor.getColumnIndexOrThrow(Table.COLUMN_JOB_START_ACTUAL));
 			if (unixTime != 0) {
 				Date d = new Date(unixTime * 1000);
 				mTxtStartText.setText(DateFormat.format("dd/MM hh:mm", d));
 			}
-			Uri notesUri = Uri.parse(JobsContentProvider.CONTENT_URI_NOTES + "/" + ticketId);
-			Log.w(TAG, "notesUri: " + notesUri);			
-			cursor.close();
-			String[] projection2 = { JobsTable.COLUMN_NOTE_MESSAGE }; 
-			Cursor cursor2 = getContentResolver().query(notesUri, projection2, null, null, null);
-			if (cursor2 != null) {
-				cursor2.moveToFirst();
-				while(!cursor2.isAfterLast()) {
-					mNotes.add(cursor2.getString(cursor2.getColumnIndexOrThrow(JobsTable.COLUMN_NOTE_MESSAGE)));
-					cursor2.moveToNext();
-				}
-				mNotesList.setAdapter(new ArrayAdapter<String>(this,
-		                R.layout.notes_list_row, mNotes));
-				//String message = cursor2.getString(cursor2.getColumnIndexOrThrow(JobsTable.COLUMN_NOTE_MESSAGE));
-				//Log.w(TAG, "Message for this job: " + message);
-				
-			} else {
-				Log.d(TAG, "There was no message for this job");
-			}
-			cursor2.close();
+			Uri notesUri = Uri.parse(MyContentProvider.CONTENT_URI_NOTES + "/" + ticketId);
+			Log.w(TAG, "notesUri: " + notesUri);
+			fillNotes(notesUri);
+			mCursor.close();			
 		}		
 	}
 	
 	/**
-	 * Populate notes
+	 * Get notes based on JOB uri and then setAdaptor for the notes array list
 	 * 
 	 * Based on the job ID, get the ticket ID. Then based on the ticket ID, get notes
 	 * 
 	 * @param uri
 	 */
-	private void fillNotes(Uri uri) {
-		String jobId = uri.getLastPathSegment();
+	private void fillNotes(Uri notesUri) {
+		String[] projection2 = { Table.COLUMN_NOTE_MESSAGE }; 
+		Cursor cursor2 = getContentResolver().query(notesUri, projection2, null, null, "date DESC");
+		if (cursor2 != null) {
+			cursor2.moveToFirst();
+			while(!cursor2.isAfterLast()) {
+				mNotes.add(cursor2.getString(cursor2.getColumnIndexOrThrow(Table.COLUMN_NOTE_MESSAGE)));
+				cursor2.moveToNext();
+			}
+			mNotesList.setAdapter(new ArrayAdapter<String>(this,
+	                R.layout.notes_list_row, mNotes));			
+		}
+		cursor2.close();
 	}
 
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 		// saveState();
-		outState.putParcelable(JobsContentProvider.CONTENT_ITEM_TYPE, jobUri);
+		outState.putParcelable(MyContentProvider.CONTENT_ITEM_TYPE, mJobUri);
 	}
 
 	@Override

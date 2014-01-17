@@ -1,9 +1,5 @@
 package com.snowball.db;
 
-import java.util.Iterator;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.content.ContentProvider;
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -25,19 +21,19 @@ import android.util.Log;
  * @author eugene
  * 
  */
-public class JobsContentProvider extends ContentProvider {
+public class MyContentProvider extends ContentProvider {
 
-	private static final String TAG = "JobContentProvider";
+	private static final String TAG = "MyContentProvider";
 
 	// database
-	private JobsDatabaseHelper database;
+	private DbHelper database;
 
 	// used for the UriMacher
 	private static final int JOBS = 10;	
 	private static final int JOB_ID = 20;
 	private static final int JOB_CALENDAR_ID = 30;
-	private static final int NOTES = 14;
-	private static final int NOTE_ID = 15;
+	private static final int NOTES = 40;
+	private static final int NOTE_ID = 50;
 
 	private static final String AUTHORITY = "com.snowball";
 
@@ -65,7 +61,7 @@ public class JobsContentProvider extends ContentProvider {
 
 	@Override
 	public boolean onCreate() {
-		database = new JobsDatabaseHelper(getContext());
+		database = new DbHelper(getContext());
 		return false;
 	}
 
@@ -86,25 +82,25 @@ public class JobsContentProvider extends ContentProvider {
 		//queryBuilder.setTables(join);
 
 		int uriType = sURIMatcher.match(uri);
-		Log.v(TAG, "Trying to match uri '" + uri + "' uriType on: " + uriType);
+		Log.v(TAG, "Uri match " + uri + " = uriType " + uriType);
 		switch (uriType) {
 		case JOBS:
-			queryBuilder.setTables(JobsTable.TABLE_JOBS);
+			queryBuilder.setTables(Table.TABLE_JOBS);
 			break;
 		case JOB_ID:
 			Log.i(TAG, "uriType match on JOB_ID");
 			// adding the ID to the original query
-			queryBuilder.setTables(JobsTable.TABLE_JOBS);
-			queryBuilder.appendWhere(JobsTable.COLUMN_ID + "=" + uri.getLastPathSegment());
+			queryBuilder.setTables(Table.TABLE_JOBS);
+			queryBuilder.appendWhere(Table.COLUMN_JOB_ID + "=" + uri.getLastPathSegment());
 			break;
 		case JOB_CALENDAR_ID:
 			// adding the ticket_id to the original query
-			queryBuilder.setTables(JobsTable.TABLE_JOBS);
-			queryBuilder.appendWhere(JobsTable.COLUMN_TICKET_ID + "=" + uri.getLastPathSegment());
+			queryBuilder.setTables(Table.TABLE_JOBS);
+			queryBuilder.appendWhere(Table.COLUMN_JOB_TICKET_ID + "=" + uri.getLastPathSegment());
 			break;
 		case NOTE_ID:
-			queryBuilder.setTables(JobsTable.TABLE_NOTES);
-			queryBuilder.appendWhere(JobsTable.COLUMN_NOTE_TICKET_ID + "=" + uri.getLastPathSegment());
+			queryBuilder.setTables(Table.TABLE_NOTES);
+			queryBuilder.appendWhere(Table.COLUMN_NOTE_TICKET_ID + "=" + uri.getLastPathSegment());
 			break;
 		default:
 			throw new IllegalArgumentException("Unknown URI: " + uri);
@@ -125,22 +121,30 @@ public class JobsContentProvider extends ContentProvider {
 
 	@Override
 	public Uri insert(Uri uri, ContentValues values) {
+		String returnUri;
 		int uriType = sURIMatcher.match(uri);
 		SQLiteDatabase sqlDB = database.getWritableDatabase();
 		// int rowsDeleted = 0;
 		long id = 0;
+		Log.d(TAG, "Switching on Uri: " + uri);
 		switch (uriType) {
+		
 		case JOBS:
-			id = sqlDB.insert(JobsTable.TABLE_JOBS, null, values);
+			id = sqlDB.insert(Table.TABLE_JOBS, null, values);
+			returnUri = BASE_PATH_JOBS + "/" + id;
 			break;
 		case NOTES:
-			id = sqlDB.insert(JobsTable.TABLE_NOTES, null, values);
+			Log.d(TAG, "ContentProvider insert adding a note message " + values.getAsString("message"));
+			id = sqlDB.insert(Table.TABLE_NOTES, null, values);
+			returnUri = BASE_PATH_NOTES + "/" + id;
 			break;
 		default:
 			throw new IllegalArgumentException("Unknown URI: " + uri);
 		}
 		getContext().getContentResolver().notifyChange(uri, null);
-		return Uri.parse(BASE_PATH_JOBS + "/" + id);
+		// TODO return correct Uri based on table
+		//return Uri.parse(BASE_PATH_JOBS + "/" + id);
+		return Uri.parse(returnUri);
 	}
 
 	@Override
@@ -150,22 +154,22 @@ public class JobsContentProvider extends ContentProvider {
 		int rowsDeleted = 0;
 		switch (uriType) {
 		case JOBS:
-			rowsDeleted = sqlDB.delete(JobsTable.TABLE_JOBS, selection, selectionArgs);
+			rowsDeleted = sqlDB.delete(Table.TABLE_JOBS, selection, selectionArgs);
 			break;
 		case JOB_ID:
 			String id = uri.getLastPathSegment();
 			if (TextUtils.isEmpty(selection)) {
-				rowsDeleted = sqlDB.delete(JobsTable.TABLE_JOBS, JobsTable.COLUMN_ID + "=" + id, null);
+				rowsDeleted = sqlDB.delete(Table.TABLE_JOBS, Table.COLUMN_JOB_ID + "=" + id, null);
 			} else {
-				rowsDeleted = sqlDB.delete(JobsTable.TABLE_JOBS, JobsTable.COLUMN_ID + "=" + id + " and " + selection, selectionArgs);
+				rowsDeleted = sqlDB.delete(Table.TABLE_JOBS, Table.COLUMN_JOB_ID + "=" + id + " and " + selection, selectionArgs);
 			}
 			break;
 		case JOB_CALENDAR_ID:
 			String calendar_id = uri.getLastPathSegment();
 			if (TextUtils.isEmpty(selection)) {
-				rowsDeleted = sqlDB.delete(JobsTable.TABLE_JOBS, JobsTable.COLUMN_CALENDAR_ID + "=" + calendar_id, null);
+				rowsDeleted = sqlDB.delete(Table.TABLE_JOBS, Table.COLUMN_JOB_CALENDAR_ID + "=" + calendar_id, null);
 			} else {
-				rowsDeleted = sqlDB.delete(JobsTable.TABLE_JOBS, JobsTable.COLUMN_CALENDAR_ID + "=" + calendar_id + " and " + selection, selectionArgs);
+				rowsDeleted = sqlDB.delete(Table.TABLE_JOBS, Table.COLUMN_JOB_CALENDAR_ID + "=" + calendar_id + " and " + selection, selectionArgs);
 			}
 			break;
 		default:
@@ -184,22 +188,22 @@ public class JobsContentProvider extends ContentProvider {
 		int rowsUpdated = 0;
 		switch (uriType) {
 		case JOBS:
-			rowsUpdated = sqlDB.update(JobsTable.TABLE_JOBS, values, selection, selectionArgs);
+			rowsUpdated = sqlDB.update(Table.TABLE_JOBS, values, selection, selectionArgs);
 			break;
 		case JOB_ID:
 			String id = uri.getLastPathSegment();
 			if (TextUtils.isEmpty(selection)) {
-				rowsUpdated = sqlDB.update(JobsTable.TABLE_JOBS, values, JobsTable.COLUMN_ID + "=" + id, null);
+				rowsUpdated = sqlDB.update(Table.TABLE_JOBS, values, Table.COLUMN_JOB_ID + "=" + id, null);
 			} else {
-				rowsUpdated = sqlDB.update(JobsTable.TABLE_JOBS, values, JobsTable.COLUMN_ID + "=" + id + " and " + selection, selectionArgs);
+				rowsUpdated = sqlDB.update(Table.TABLE_JOBS, values, Table.COLUMN_JOB_ID + "=" + id + " and " + selection, selectionArgs);
 			}
 			break;
 		case JOB_CALENDAR_ID:
 			String calendar_id = uri.getLastPathSegment();
 			if (TextUtils.isEmpty(selection)) {
-				rowsUpdated = sqlDB.update(JobsTable.TABLE_JOBS, values, JobsTable.COLUMN_CALENDAR_ID + "=" + calendar_id, null);
+				rowsUpdated = sqlDB.update(Table.TABLE_JOBS, values, Table.COLUMN_JOB_CALENDAR_ID + "=" + calendar_id, null);
 			} else {
-				rowsUpdated = sqlDB.update(JobsTable.TABLE_JOBS, values, JobsTable.COLUMN_CALENDAR_ID + "=" + calendar_id + " and " + selection, selectionArgs);
+				rowsUpdated = sqlDB.update(Table.TABLE_JOBS, values, Table.COLUMN_JOB_CALENDAR_ID + "=" + calendar_id + " and " + selection, selectionArgs);
 			}
 			break;
 		default:
@@ -228,111 +232,6 @@ public class JobsContentProvider extends ContentProvider {
 //			}
 //		}
 //	}
-
-	/**
-	 * Determine action by evaluating JSON from message and iterating over first
-	 * item TODO Move to MessageReceiver
-	 * 
-	 * @param message
-	 * @return action or NULL if no action
-	 */
-	public static String getAction(String message) {
-		JSONObject jObject = null;
-		try {
-			jObject = new JSONObject(message);
-		} catch (JSONException e) {
-			e.printStackTrace();
-			return null;
-		}
-		Iterator<?> iter = jObject.keys();
-		String action = null;
-		while (iter.hasNext()) {
-			action = (String) iter.next();
-		}
-		Log.v(TAG, "The action is " + action);
-		return action;
-	}
-
-	public static ContentValues getNotes(String action, String message) {
-		JSONObject jObject = null;
-		ContentValues values = new ContentValues();
-		try {
-			jObject = new JSONObject(message);
-			JSONObject payload = jObject.getJSONObject(action);
-			JSONObject notes = payload.getJSONObject("notes");
-			Log.i(TAG, "The latest note reads " + notes.getString("message"));
-			values.put(JobsTable.COLUMN_NOTE_WHMCS_ID, notes.getString("id"));
-			values.put(JobsTable.COLUMN_NOTE_TICKET_ID, notes.getString("ticketid"));
-			values.put(JobsTable.COLUMN_NOTE_ADMIN, notes.getString("admin"));
-			values.put(JobsTable.COLUMN_NOTE_DATE, notes.getString("date"));
-			values.put(JobsTable.COLUMN_NOTE_MESSAGE, notes.getString("message"));
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return values;
-	}
-
-	/**
-	 * Interpret JSON and convert to content values TODO Move to MessageReceiver
-	 * 
-	 * @param action
-	 * @param message
-	 * @return
-	 */
-	public static ContentValues convertMessageToContentValues(String action,
-			String message) {
-		JSONObject jObject = null;
-		int userid = 0;
-		int calendar_id = 0;
-		int ticket_id = 0;
-		String department = null;
-		String client_name = null;
-		String companyname = null;
-		String phonenumber = null;
-		String address1 = null;
-		String address2 = null;
-		String city = null;
-		String extra = null;
-		int start = 0;
-		try {
-			jObject = new JSONObject(message);
-			JSONObject payload = jObject.getJSONObject(action);
-			calendar_id = payload.getInt("calendar_id");
-			if (action.equals("insert") || action.equals("update")) {
-				start = payload.getInt("start");
-				userid = payload.getInt("userid");
-				ticket_id = payload.getInt("ticket_id");
-				department = payload.getString("department");
-				client_name = payload.getString("client_name");
-				companyname = payload.getString("companyname");
-				phonenumber = payload.getString("phonenumber");
-				address1 = payload.getString("address1");
-				address2 = payload.getString("address2");
-				city = payload.getString("city");
-				extra = payload.getString("extra");
-//				JSONObject notes = payload.getJSONObject("notes");
-//				Log.i(TAG, "The latest note reads " + notes.getString("message"));
-			}
-		} catch (JSONException e) {
-			Log.e(TAG, "Error parsing JSON");
-			e.printStackTrace();
-		}
-
-		ContentValues values = new ContentValues();
-		values.put(JobsTable.COLUMN_CALENDAR_ID, calendar_id);
-		values.put(JobsTable.COLUMN_START, start);
-		values.put(JobsTable.COLUMN_TICKET_ID, ticket_id);
-		values.put(JobsTable.COLUMN_CLIENT_ID, userid);
-		values.put(JobsTable.COLUMN_DEPARTMENT, department);
-		values.put(JobsTable.COLUMN_CLIENT_NAME, client_name);
-		values.put(JobsTable.COLUMN_COMPANYNAME, companyname);
-		values.put(JobsTable.COLUMN_PHONENUMBER, phonenumber);
-		values.put(JobsTable.COLUMN_ADDRESS1, address1);
-		values.put(JobsTable.COLUMN_ADDRESS2, address2);
-		values.put(JobsTable.COLUMN_CITY, city);
-		values.put(JobsTable.COLUMN_EXTRA, extra);
-		return values;
-	}
+	
 
 }

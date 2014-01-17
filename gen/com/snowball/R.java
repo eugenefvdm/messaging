@@ -167,6 +167,13 @@ containing a value of this type.
         public static final int common_signin_btn_text_light=0x7f05000b;
     }
     public static final class dimen {
+        /** 
+         Customize dimensions originally defined in res/values/dimens.xml (such as
+         screen margins) for sw720dp devices (e.g. 10" tablets) in landscape here.
+    
+         */
+        public static final int activity_horizontal_margin=0x7f090003;
+        public static final int activity_vertical_margin=0x7f090004;
         public static final int padding_large=0x7f090002;
         public static final int padding_medium=0x7f090001;
         public static final int padding_small=0x7f090000;
@@ -211,43 +218,46 @@ containing a value of this type.
         public static final int success=0x7f020024;
     }
     public static final class id {
-        public static final int TableRow3=0x7f060019;
+        public static final int TableRow3=0x7f06001a;
+        public static final int action_settings=0x7f060024;
         public static final int btnRegister=0x7f060009;
-        public static final int city=0x7f06001f;
-        public static final int client_name=0x7f060020;
-        public static final int delete_all=0x7f060022;
-        public static final int department=0x7f06001d;
+        public static final int checkBox1=0x7f060023;
+        public static final int client_name=0x7f060021;
+        public static final int delete_all=0x7f060025;
+        public static final int department_city=0x7f06001e;
         public static final int hybrid=0x7f060004;
-        public static final int icon=0x7f06001c;
-        public static final int job_cancel_button=0x7f060011;
+        public static final int icon=0x7f06001d;
+        public static final int job_cancel_button=0x7f060012;
         public static final int job_client=0x7f06000c;
-        public static final int job_decline_button=0x7f060012;
-        public static final int job_detail_start_label=0x7f060014;
-        public static final int job_detail_total_label=0x7f06001a;
-        public static final int job_detail_total_text=0x7f06001b;
-        public static final int job_edit_start_text=0x7f060015;
-        public static final int job_edit_stop_label=0x7f060017;
-        public static final int job_edit_stop_text=0x7f060018;
-        public static final int job_finish_button=0x7f06000f;
+        public static final int job_custom_fields_button=0x7f06000d;
+        public static final int job_decline_button=0x7f060013;
+        public static final int job_detail_start_label=0x7f060015;
+        public static final int job_detail_total_label=0x7f06001b;
+        public static final int job_detail_total_text=0x7f06001c;
+        public static final int job_edit_start_text=0x7f060016;
+        public static final int job_edit_stop_label=0x7f060018;
+        public static final int job_edit_stop_text=0x7f060019;
+        public static final int job_finish_button=0x7f060010;
         public static final int job_location=0x7f06000b;
-        public static final int job_pause_button=0x7f060010;
-        public static final int job_start_button=0x7f06000e;
+        public static final int job_pause_button=0x7f060011;
+        public static final int job_start_button=0x7f06000f;
         public static final int lblMessage=0x7f06000a;
         public static final int map=0x7f060006;
         public static final int none=0x7f060000;
         public static final int normal=0x7f060001;
-        public static final int notes_list=0x7f06000d;
-        public static final int notes_list_row_item=0x7f060021;
+        public static final int notes_list=0x7f06000e;
+        public static final int notes_list_row_item=0x7f060022;
         public static final int pager=0x7f060005;
         public static final int satellite=0x7f060002;
-        public static final int settings=0x7f060024;
-        public static final int start=0x7f06001e;
-        public static final int tableRow1=0x7f060013;
-        public static final int tableRow2=0x7f060016;
+        public static final int settings=0x7f060027;
+        public static final int start=0x7f06001f;
+        public static final int tableRow1=0x7f060014;
+        public static final int tableRow2=0x7f060017;
         public static final int terrain=0x7f060003;
+        public static final int title=0x7f060020;
         public static final int txtEmail=0x7f060008;
         public static final int txtName=0x7f060007;
-        public static final int unregister=0x7f060023;
+        public static final int unregister=0x7f060026;
     }
     public static final class integer {
         public static final int google_play_services_version=0x7f080000;
@@ -261,12 +271,15 @@ containing a value of this type.
         public static final int job_detail=0x7f030005;
         public static final int job_row=0x7f030006;
         public static final int notes_list_row=0x7f030007;
+        public static final int site_survey=0x7f030008;
     }
     public static final class menu {
-        public static final int job_detail_menu=0x7f0b0000;
-        public static final int main_menu=0x7f0b0001;
+        public static final int build_custom_fields=0x7f0b0000;
+        public static final int job_detail_menu=0x7f0b0001;
+        public static final int main_menu=0x7f0b0002;
     }
     public static final class string {
+        public static final int action_settings=0x7f070057;
         public static final int already_registered=0x7f07001c;
         public static final int app_name=0x7f07001a;
         /**   Title for notification shown when GooglePlayServices needs to be
@@ -376,28 +389,31 @@ containing a value of this type.
         public static final int gcm_recoverable_error=0x7f070021;
         public static final int gcm_registered=0x7f07001d;
         public static final int gcm_unregistered=0x7f07001e;
-        public static final int job_button_cancel=0x7f07004f;
-        public static final int job_button_decline=0x7f07004e;
-        public static final int job_button_pause=0x7f07004d;
-        public static final int job_button_start=0x7f07004b;
-        public static final int job_button_stop=0x7f07004c;
+        public static final int hello_world=0x7f070058;
+        public static final int job_button_cancel=0x7f070050;
+        public static final int job_button_custom_fields=0x7f07004b;
+        public static final int job_button_decline=0x7f07004f;
+        public static final int job_button_pause=0x7f07004e;
+        public static final int job_button_start=0x7f07004c;
+        public static final int job_button_stop=0x7f07004d;
         public static final int job_detail_client=0x7f070045;
         public static final int job_detail_department=0x7f070043;
         public static final int job_detail_location=0x7f070044;
-        public static final int job_detail_total_time=0x7f070052;
-        public static final int job_finish=0x7f070051;
-        public static final int job_not_available=0x7f070054;
-        public static final int job_not_started_yet=0x7f070053;
-        public static final int job_start=0x7f070050;
+        public static final int job_detail_total_time=0x7f070053;
+        public static final int job_finish=0x7f070052;
+        public static final int job_not_available=0x7f070055;
+        public static final int job_not_started_yet=0x7f070054;
+        public static final int job_start=0x7f070051;
         public static final int list_menu_map=0x7f07002c;
         public static final int main_menu_delete_all=0x7f07002a;
         public static final int main_menu_settings=0x7f070029;
         public static final int main_menu_unregister=0x7f07002b;
-        public static final int no_tasks=0x7f070028;
+        public static final int no_items=0x7f070028;
         public static final int pref_notification_default=0x7f07003b;
         public static final int pref_notification_summary=0x7f070039;
         public static final int pref_notification_title=0x7f07003a;
-        /**  End Preferences  
+        /** 
+    End Preferences  
     <string name="pref_notification_default">content://settings/system/notification_sound</string>
     
          */
@@ -416,12 +432,13 @@ containing a value of this type.
         public static final int task_row_icon=0x7f070046;
         public static final int task_row_start=0x7f070048;
         public static final int task_summary=0x7f070041;
+        public static final int title_activity_build_custom_fields=0x7f070056;
         public static final int whmcs_folder_default=0x7f070034;
         public static final int whmcs_folder_key=0x7f070031;
         public static final int whmcs_folder_summary=0x7f070032;
         public static final int whmcs_folder_title=0x7f070033;
         public static final int whmcs_hostname_default=0x7f070030;
-        /**  Preferences  
+        /**  Preferences 
          */
         public static final int whmcs_hostname_key=0x7f07002d;
         public static final int whmcs_hostname_summary=0x7f07002e;
