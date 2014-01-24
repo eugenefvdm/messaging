@@ -1,5 +1,7 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<resources
+    xmlns:tools="http://schemas.android.com/tools" tools:locale="en"
+    >
 
     <string name="app_name">Job Tracker</string>
     <string name="error_config">Please set the %1$s constant and recompile the app.</string>
@@ -59,10 +61,12 @@
     <string name="task_row_start">Fri 20 05:00</string>
     <string name="task_row_city">Stellenbosch</string>
     <string name="task_row_client_name">Eugene van der Merwe</string>
-    <string name="job_button_custom_fields">Custom Fields</string>
-    <string name="job_button_start">Start</string>
-    <string name="job_button_stop">Finish</string>
-    <string name="job_button_pause">Put on hold</string>
+    <string name="job_button_custom_fields">Additional Info</string>
+    <string name="job_button_start_travel">Start Travel</string>
+    <string name="job_button_end_travel">End Travel</string>
+    <string name="job_button_start">Start Job</string>
+    <string name="job_button_stop">End Job</string>
+    <string name="job_button_pause">Pause Job</string>
     <string name="job_button_decline">Decline</string>
     <string name="job_button_cancel">Cancel &amp; Escalate</string>
     <string name="job_start">Started</string>

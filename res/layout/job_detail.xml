@@ -1,168 +1,237 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:layout_marginLeft="20dip"
-    android:layout_marginRight="20dip"
-    android:orientation="vertical" >
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content" >
 
-    <TextView
-        android:id="@+id/job_location"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:hint="@string/job_detail_location"
-        android:textAppearance="?android:attr/textAppearanceMedium" >
-    </TextView>
-    
-    <TextView
-        android:id="@+id/job_client"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:hint="@string/job_detail_client"
-        android:textAppearance="?android:attr/textAppearanceMedium" >
-    </TextView>
-    
-    <View
-    android:layout_width="fill_parent"
-    android:layout_height="1dp"
-    android:background="@android:color/darker_gray"/>
-    
-    <Button
-        android:id="@+id/job_custom_fields_button"
-        android:layout_width="192dp"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:text="@string/job_button_custom_fields" />
-    
-    <View
-    android:layout_width="fill_parent"
-    android:layout_height="1dp"
-    android:background="@android:color/darker_gray"/>
-    
-    <ListView
-        android:id="@+id/notes_list"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
-    </ListView>
-    
-    <View
-    android:layout_width="fill_parent"
-    android:layout_height="1dp"
-    android:background="@android:color/darker_gray"/>
-
-    <Button
-        android:id="@+id/job_start_button"
-        android:layout_width="192dp"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:text="@string/job_button_start" />
+        android:layout_marginLeft="15dip"
+        android:layout_marginRight="15dip"
+        android:orientation="vertical" >
 
-    <Button
-        android:id="@+id/job_finish_button"
-        android:layout_width="192dp"
-        android:layout_height="wrap_content"      
-        android:layout_gravity="center_horizontal"  
-        android:text="@string/job_button_stop" />
+        <TextView
+            android:id="@+id/job_location"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/job_detail_location"
+            android:textAppearance="?android:attr/textAppearanceMedium" >
+        </TextView>
 
-    <Button
-        android:id="@+id/job_pause_button"
-        android:layout_width="192dp"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:text="@string/job_button_pause" />
-    
-    <Button
-        android:id="@+id/job_cancel_button"
-        android:layout_width="192dp"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:text="@string/job_button_cancel" />
-    
-    <Button
-        android:id="@+id/job_decline_button"
-        android:layout_width="192dp"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:text="@string/job_button_decline" />
+        <TextView
+            android:id="@+id/job_client"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/job_detail_client"
+            android:textAppearance="?android:attr/textAppearanceMedium" >
+        </TextView>
 
-    <TableLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content" >
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:background="@android:color/darker_gray" />
 
-        <TableRow
-            android:id="@+id/tableRow1"
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="0.5dp"
+            android:background="@android:color/darker_gray" />
+
+        <LinearLayout
+            style="?android:attr/buttonBarStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" >
+
+            <Button
+                android:id="@+id/job_start_travel_button"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="138dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/job_button_start_travel" />
+
+            <Button
+                android:id="@+id/job_end_travel_button"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="138dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/job_button_end_travel"                 
+                />
+        </LinearLayout>
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="0.5dp"
+            android:background="@android:color/darker_gray" />
+
+        <LinearLayout
+            style="?android:attr/buttonBarStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" >
+
+            <Button
+                android:id="@+id/job_start_button"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="96dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/job_button_start" />
+
+            <Button
+                android:id="@+id/job_finish_button"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="96dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/job_button_stop" />
+
+            <Button
+                android:id="@+id/job_pause_button"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="96dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/job_button_pause" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="0.5dp"
+            android:background="@android:color/darker_gray" />
+
+        <LinearLayout
+            style="?android:attr/buttonBarStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" >
+
+            <Button
+                android:id="@+id/job_cancel_button"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="138dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/job_button_cancel" />
+
+            <Button
+                android:id="@+id/job_decline_button"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="138dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/job_button_decline" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="0.5dp"
+            android:background="@android:color/darker_gray" />
+
+        <ListView
+            android:id="@+id/notes_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+        </ListView>
+
+        <LinearLayout
+            style="?android:attr/buttonBarStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+             >
+
+            <Button
+                android:id="@+id/job_custom_fields_button"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="192dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/job_button_custom_fields" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="0.5dp"
+            android:background="@android:color/darker_gray" />
+
+        <TableLayout
             android:layout_width="fill_parent"
             android:layout_height="wrap_content" >
 
-            <TextView
-                android:id="@+id/job_detail_start_label"
+            <TableRow
+                android:id="@+id/tableRow1"
                 android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1.0"
-                android:gravity="right"
-                android:paddingRight="15dip"
-                android:text="@string/job_start"
-                android:textAppearance="?android:attr/textAppearanceMedium" />
+                android:layout_height="wrap_content" >
 
-            <TextView
-                android:id="@+id/job_edit_start_text"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1.0"
-                android:paddingLeft="15dip"
-                android:text="@string/job_not_started_yet"
-                android:textAppearance="?android:attr/textAppearanceMedium" />
-        </TableRow>
+                <TextView
+                    android:id="@+id/job_detail_start_label"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1.0"
+                    android:gravity="right"
+                    android:paddingRight="15dip"
+                    android:text="@string/job_start"
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
 
-        <TableRow
-            android:id="@+id/tableRow2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" >
+                <TextView
+                    android:id="@+id/job_edit_start_text"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1.0"
+                    android:paddingLeft="15dip"
+                    android:text="@string/job_not_started_yet"
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
+            </TableRow>
 
-            <TextView
-                android:id="@+id/job_edit_stop_label"
+            <TableRow
+                android:id="@+id/tableRow2"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1.0"
-                android:gravity="right"
-                android:paddingRight="15dip"
-                android:text="@string/job_finish"
-                android:textAppearance="?android:attr/textAppearanceMedium" />
+                android:layout_height="wrap_content" >
 
-            <TextView
-                android:id="@+id/job_edit_stop_text"
+                <TextView
+                    android:id="@+id/job_edit_stop_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1.0"
+                    android:gravity="right"
+                    android:paddingRight="15dip"
+                    android:text="@string/job_finish"
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
+
+                <TextView
+                    android:id="@+id/job_edit_stop_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1.0"
+                    android:paddingLeft="15dip"
+                    android:text="@string/job_not_available"
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
+            </TableRow>
+
+            <TableRow
+                android:id="@+id/TableRow3"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1.0"
-                android:paddingLeft="15dip"
-                android:text="@string/job_not_available"
-                android:textAppearance="?android:attr/textAppearanceMedium" />
-        </TableRow>
+                android:layout_height="wrap_content" >
 
-        <TableRow
-            android:id="@+id/TableRow3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" >
+                <TextView
+                    android:id="@+id/job_detail_total_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1.0"
+                    android:gravity="right"
+                    android:paddingRight="15dip"
+                    android:text="@string/job_detail_total_time"
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
 
-            <TextView
-                android:id="@+id/job_detail_total_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1.0"
-                android:gravity="right"
-                android:paddingRight="15dip"
-                android:text="@string/job_detail_total_time"
-                android:textAppearance="?android:attr/textAppearanceMedium" />
+                <TextView
+                    android:id="@+id/job_detail_total_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1.0"
+                    android:paddingLeft="15dip"
+                    android:text="@string/job_not_available"
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
+            </TableRow>
+        </TableLayout>
+    </LinearLayout>
 
-            <TextView
-                android:id="@+id/job_detail_total_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1.0"
-                android:paddingLeft="15dip"
-                android:text="@string/job_not_available"
-                android:textAppearance="?android:attr/textAppearanceMedium" />
-        </TableRow>
-    </TableLayout>
-
-</LinearLayout>
+</ScrollView>
