@@ -20,8 +20,9 @@ import java.util.ArrayList;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
+import com.google.android.gcm.GCMBaseIntentService;
+
 import za.co.snowball.jobtracker.db.MyContentProvider;
-import za.co.snowball.jobtracker.gcm.GCMBaseIntentService;
 
 import android.app.Notification;
 import android.app.Notification.InboxStyle;
@@ -38,7 +39,6 @@ import android.preference.PreferenceManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
-@SuppressWarnings("deprecation")
 public class GCMIntentService extends GCMBaseIntentService implements AsyncResponse {
 
 	private static final String TAG = "GCMIntentService";

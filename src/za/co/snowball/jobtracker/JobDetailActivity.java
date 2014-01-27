@@ -198,7 +198,7 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 				getContentResolver().update(mJobUri, values, null, null);
 
 				postToMessagingServer("pause", endTime, null);
-				setButtonStatus("paused");
+				setButtonStatus(Table.JOB_STATUS_PAUSED);
 			}
 		});
 

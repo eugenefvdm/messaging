@@ -10,8 +10,9 @@ import java.util.ArrayList;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
+import com.google.android.gcm.GCMRegistrar;
+
 import za.co.snowball.jobtracker.db.MyContentProvider;
-import za.co.snowball.jobtracker.gcm.GCMRegistrar;
 
 import android.app.ActionBar;
 import android.app.FragmentTransaction;
@@ -270,6 +271,7 @@ public class MainActivity extends FragmentActivity implements
 			deleteAll();
 			return true;
 		case R.id.unregister:
+			Log.d(TAG, "unregister menu clicked, calling GCMRegistrar.unregister");
 			GCMRegistrar.unregister(this);
 			// SharedPreferences settings =
 			// PreferenceManager.getDefaultSharedPreferences(this);
