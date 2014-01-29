@@ -65,6 +65,7 @@ public class JobListFragment extends ListFragment implements
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 		Bundle args = getArguments();
+		//mFilter = Table.JOB_STATUS_COMPLETED;
 		mFilter = args.getString("filter");					
     }
 
@@ -137,7 +138,7 @@ public class JobListFragment extends ListFragment implements
 				Table.COLUMN_JOB_ID, Table.COLUMN_JOB_DEPARTMENT, Table.COLUMN_JOB_TITLE,
 				Table.COLUMN_JOB_CITY, Table.COLUMN_JOB_CLIENT_NAME, Table.COLUMN_JOB_COMPANYNAME,
 				Table.COLUMN_JOB_START };
-		String selection = "status != ?";
+		String selection = "status = ?";
 		String[] selectionArgs = { mFilter };
 		String sortOrder = "start";
 		CursorLoader cursorLoader = new CursorLoader(ctx, MyContentProvider.CONTENT_URI_JOBS, projection, selection, selectionArgs, sortOrder);
@@ -181,7 +182,11 @@ public class JobListFragment extends ListFragment implements
 			TextView tv3 = (TextView) view.findViewById(R.id.title);
 			tv3.setText(title);
 			TextView tv4 = (TextView) view.findViewById(R.id.client_name);
-			tv4.setText(client_name + " / " + companyname);
+			String client_name_full = client_name;
+			if (!companyname.equals("")) {
+				client_name_full += " / " + companyname;
+			}
+			tv4.setText(client_name_full);
 		}
 	}
 

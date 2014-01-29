@@ -136,6 +136,7 @@ public class JobDetailActivity extends Activity implements AsyncResponse {
 		ab.setTitle(mDepartment);
 		ab.setSubtitle(mCity);
 		
+		// TODO Only show the custom fields button if there are custom fields - crash results otherwise
 		mBtnCustomFields.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
 				Intent i = new Intent(JobDetailActivity.this, BuildCustomLayout.class);

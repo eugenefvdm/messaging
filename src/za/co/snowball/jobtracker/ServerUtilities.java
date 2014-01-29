@@ -1,7 +1,5 @@
 package za.co.snowball.jobtracker;
 
-//import static com.snowball.CommonUtilities.SERVER_ACTION_URL;
-//import static com.snowball.CommonUtilities.SERVER_REGISTER_URL;
 import static za.co.snowball.jobtracker.CommonUtilities.displayMessage;
 
 import java.io.IOException;
@@ -24,7 +22,6 @@ import android.preference.PreferenceManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
-@SuppressWarnings("deprecation")
 public final class ServerUtilities {
 	private static final int MAX_ATTEMPTS = 5;
 	private static final int BACKOFF_MILLI_SECONDS = 2000;
@@ -37,15 +34,15 @@ public final class ServerUtilities {
 	 */	
 	static void register1(final Context context, final String regId) {
 		String phoneModel = Build.MODEL;
-		String firstEmailAccount = CommonUtilities.getDeviceAccounts(context);
+		//String firstEmailAccount = CommonUtilities.getDeviceAccounts(context);
+		String firstEmailAccount = CommonUtilities.getEmailAddress(context);
 		Log.i(TAG, "Registering device regId:  " + regId);
 		String serverUrl = getServerUrl(context) + "register.php";
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("regId", regId);
 		params.put("name", phoneModel);
 		params.put("email", firstEmailAccount);
-		// TODO determine if device_id code should be here or
-		// RegisterActivity->MainActivity->ServerUtilities
+		
 		TelephonyManager telephonyManager;
 		telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
 		params.put("device_id", telephonyManager.getDeviceId());

@@ -46,7 +46,7 @@ public final class CommonUtilities {
         context.sendBroadcast(intent);
     }
     
-    public static String getDeviceAccounts(Context context) {
+    public static String getDeviceAccounts1(Context context) {
 		Pattern emailPattern = Patterns.EMAIL_ADDRESS; // API level 8+
 		Account[] accounts = AccountManager.get(context).getAccounts();
 		for (Account account : accounts) {

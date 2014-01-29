@@ -1,7 +1,7 @@
 package za.co.snowball.jobtracker.backup;
 
 import za.co.snowball.jobtracker.AlertDialogManager;
-import za.co.snowball.jobtracker.MainActivity;
+import za.co.snowball.jobtracker.JobListActivity;
 import za.co.snowball.jobtracker.R;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -50,7 +50,7 @@ public class RegisterActivity extends Activity {
 			//Intent i = new Intent(getApplicationContext(), PrefsActivity.class);
 			//startActivityForResult(i, GET_PREFS);					
 		//} else {
-			Intent i = new Intent(getApplicationContext(), MainActivity.class);
+			Intent i = new Intent(getApplicationContext(), JobListActivity.class);
 			i.putExtra("name", deviceName);
 			startActivity(i);			
 		//}
@@ -60,7 +60,7 @@ public class RegisterActivity extends Activity {
             Intent data) {
         if (requestCode == GET_PREFS) {
             if (resultCode == RESULT_OK) {
-            	Intent i = new Intent(getApplicationContext(), MainActivity.class);
+            	Intent i = new Intent(getApplicationContext(), JobListActivity.class);
     			//i.putExtra("name", deviceName);
     			startActivity(i);
             }

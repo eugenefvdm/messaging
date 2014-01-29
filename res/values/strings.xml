@@ -40,6 +40,9 @@
     <string name="pref_notification_summary">Enter a notification sound</string>
     <string name="pref_notification_title">Notification sound</string>
     <string name="pref_notification_default">content://settings/system/notification_sound</string>
+        
+    <string name="pref_register_summary">Click here to see if your device is registered with the server</string>
+    <string name="pref_register_title">Check Registration Status</string>    
 
     <!--
     End Preferences  
@@ -77,5 +80,15 @@
     <string name="title_activity_build_custom_fields">BuildCustomFields</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
+    
+    <!-- Nav drawer stuff -->
+    
+    <string name="stuff">This fragment is not in the nav drawer</string>
+    <string name="outstanding">Outstanding</string>
+    <string name="completed">Completed</string>
+    <string name="settings">Settings</string>
+    <string name="something">Something Else</string>
+    <string name="drawer_open">Open navigation drawer</string>
+    <string name="drawer_close">Close navigation drawer</string>
 
 </resources>

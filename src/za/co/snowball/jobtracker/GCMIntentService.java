@@ -65,7 +65,8 @@ public class GCMIntentService extends GCMBaseIntentService implements AsyncRespo
 		nameValuePairs.add(new BasicNameValuePair("action", "register"));
 		nameValuePairs.add(new BasicNameValuePair("regId", registrationId));				
 		nameValuePairs.add(new BasicNameValuePair("name", Build.MODEL));
-		String firstEmailAccount = CommonUtilities.getDeviceAccounts(this);
+		//String firstEmailAccount = CommonUtilities.getDeviceAccounts(this);
+		String firstEmailAccount = CommonUtilities.getEmailAddress(this);
 		nameValuePairs.add(new BasicNameValuePair("email", firstEmailAccount));
 		TelephonyManager telephonyManager;
 		telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
@@ -96,7 +97,8 @@ public class GCMIntentService extends GCMBaseIntentService implements AsyncRespo
     protected void onUnregistered(Context context, String registrationId) {
         Log.i(TAG, "Device unregistered");
         displayMessage(context, getString(R.string.gcm_unregistered));        
-        String firstEmailAccount = CommonUtilities.getDeviceAccounts(this);		       
+        //String firstEmailAccount = CommonUtilities.getDeviceAccounts(this);		       
+        String firstEmailAccount = CommonUtilities.getEmailAddress(this);
         ServerUtilities.unregister(context, registrationId, firstEmailAccount);
     }
 
@@ -176,7 +178,7 @@ public class GCMIntentService extends GCMBaseIntentService implements AsyncRespo
     	
     	// Old code commented out because we don't launch to JobDetailActivity any more
     	//Intent notificationIntent = new Intent(context, JobDetailActivity.class);
-    	Intent notificationIntent = new Intent(context, MainActivity.class);
+    	Intent notificationIntent = new Intent(context, JobListActivity.class);
     	if (dbRecordId != 0) {
     		Uri jobUri = Uri.parse(MyContentProvider.CONTENT_URI_JOBS + "/" + dbRecordId);
     		notificationIntent.putExtra(MyContentProvider.CONTENT_ITEM_TYPE, jobUri);

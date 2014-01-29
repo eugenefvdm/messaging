@@ -3,43 +3,47 @@
 
     <PreferenceCategory
         android:key="first_category"
-        android:title="General" >       
-        <EditTextPreference
-            android:key="@string/whmcs_hostname_key"
-            android:summary="@string/whmcs_hostname_summary"
-            android:title="@string/whmcs_hostname_title"
-			android:defaultValue="@string/whmcs_hostname_default"
-			android:hint="@string/whmcs_hostname_default"
-            />
-        <EditTextPreference
-            android:key="@string/whmcs_folder_key"
-            android:summary="@string/whmcs_folder_summary"
-            android:title="@string/whmcs_folder_title"
-			android:defaultValue="@string/whmcs_folder_default"
-			android:hint="@string/whmcs_folder_default"
-            />
-       	 <EditTextPreference
+        android:title="WHMCS Settings" >
+        <Preference
+            android:defaultValue="@string/email_default"
+            android:hint="@string/email_default"
             android:key="@string/email_key"
             android:summary="@string/email_summary"
-            android:title="@string/email_title"
-			android:defaultValue="@string/email_default"
-			android:hint="@string/email_default"
-            />                
+            android:title="@string/email_title" />
+        <EditTextPreference
+            android:defaultValue="@string/whmcs_hostname_default"
+            android:hint="@string/whmcs_hostname_default"
+            android:key="@string/whmcs_hostname_key"
+            android:summary="@string/whmcs_hostname_summary"
+            android:title="@string/whmcs_hostname_title" />
+        <EditTextPreference
+            android:defaultValue="@string/whmcs_folder_default"
+            android:hint="@string/whmcs_folder_default"
+            android:key="@string/whmcs_folder_key"
+            android:summary="@string/whmcs_folder_summary"
+            android:title="@string/whmcs_folder_title" />
     </PreferenceCategory>
     <PreferenceCategory
         android:key="second_category"
         android:title="Notification" >
         <RingtonePreference
+            android:defaultValue="@string/pref_notification_default"
             android:key="notification_sound"
             android:ringtoneType="notification"
             android:showDefault="true"
             android:showSilent="true"
             android:summary="@string/pref_notification_summary"
-            android:title="@string/pref_notification_title"
-            android:defaultValue="@string/pref_notification_default"
-            />
+            android:title="@string/pref_notification_title" />
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:key="third_category"
+        android:title="Actions" >
+        <Preference
+            android:key="register"
+            android:summary="@string/pref_register_summary"
+            android:title="@string/pref_register_title" >            
+        </Preference>
     </PreferenceCategory>
 
 </PreferenceScreen>
-
 <!-- android:defaultValue="@string/pref_notification_default" -->
